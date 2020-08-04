@@ -1,0 +1,33 @@
+## Finds a dev package
+# Takes name and a path. Returns the variables NAME_LIBRARIES, NAME_INCLUDE_DIR
+# CKF
+
+function(find_dev_package NAME PATH)
+    if (NOT EXISTS ${PATH}/CMakeLists.txt)
+        # try a few options
+        if (EXISTS $ENV{HOME}/Work/Libraries/${PATH}/CMakeLists.txt)
+            set(PATH "$ENV{HOME}/Work/Libraries/${PATH}")
+        elseif(EXISTS $ENV{LIBRARIES_DIR}/${PATH}/CMakeLists.txt)
+            set(PATH $ENV{LIBRARIES_DIR}/${PATH})
+        elseif(EXISTS ${PROJECT_SOURCE_DIR}/../${PATH}/CMakeLists.txt)
+            set(PATH ${PROJECT_SOURCE_DIR}/../${PATH})
+        else()
+            message ( FATAL_ERROR "Could not locate directory of development module." )
+        endif()
+    endif()
+    if (NOT TARGET ${NAME})
+        add_subdirectory(${PATH} ${NAME})
+    endif()
+    set(${NAME}_INCLUDE_DIR ${PATH}/include/)
+    if (NOT EXISTS ${${NAME}_INCLUDE_DIR})
+        message( FATAL_ERROR "Failed to find include directory for project ${NAME} : ${${NAME}_INCLUDE_DIR}" )
+    endif()
+    get_target_property(TARGET_INCLUDE_DIRECTORIES ${NAME} INCLUDE_DIRECTORIES)
+    set(${NAME}_INCLUDE_DIRS ${${NAME}_INCLUDE_DIR} ${TARGET_INCLUDE_DIRECTORIES} PARENT_SCOPE)
+    get_target_property(LIBNAME ${NAME} NAME)
+    link_directories(${${NAME}_BINARY_DIR})
+    set(${NAME}_LIBRARIES ${LIBNAME} ${DEPENDENT_LIBRARIES} PARENT_SCOPE)
+    set(${NAME}_INCLUDE_DIR ${PATH}/include/ PARENT_SCOPE)
+    set(${NAME}_LIBRARY ${LIBNAME} PARENT_SCOPE)
+    mark_as_advanced(${NAME}_INCLUDE_DIRS ${NAME}_LIBRARIES)
+endfunction()
