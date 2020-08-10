@@ -14,7 +14,7 @@ namespace habits {
     std::map<std::string,std::function<void(const std::string&)>> m_load_map;
     gppe::on_startup<void(void)> datasets_on_startup ([](){
         // add load function or aliases here
-        m_load_map.emplace("bolt_placement_dataset""bolt_placement_dataset",&load_bolt_placement_dataset);
+        m_load_map.emplace("bolt_placement_dataset",&load_bolt_placement_dataset);
         m_load_map.emplace("bolts",&load_bolt_placement_dataset);
         m_load_map.emplace("cube_placement_dataset",&load_cube_placement_dataset);
         m_load_map.emplace("cubes",&load_cube_placement_dataset);
