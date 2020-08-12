@@ -62,6 +62,12 @@ endif()
 # Include local includes
 include_directories(include/)
 list(APPEND HABITS_FRAMEWORK_SOURCES
+    include/habits/core/options.h
+    src/habits/core/options.cpp
+    include/habits/datasets.h
+    src/habits/datasets.cpp
+    include/habits/segmentation/segmenter.h
+    src/habits/segmentation/segmenter.cpp
 #    include/hap/data/maps/event_pair_mapping.h
 #    src/hap/data/maps/event_pair_mapping.cpp
 #    include/hap/data/maps/goal_region_mapping.h
@@ -162,10 +168,6 @@ list(APPEND HABITS_FRAMEWORK_SOURCES
 #    include/hap/analysis/prediction/weighted_likelihood_alignment_performance.h
 #    src/hap/analysis/prediction/weighted_likelihood_matrix.cpp
 #    src/hap/analysis/prediction/weighted_likelihood_alignment_performance.cpp
-    include/habits/core/options.h
-    src/habits/core/options.cpp
-    include/habits/datasets.h
-    src/habits/datasets.cpp
 #    include/hap/core/options_events.h
 #    src/hap/core/options_events.cpp
 #    include/hap/core/options_activities.h
