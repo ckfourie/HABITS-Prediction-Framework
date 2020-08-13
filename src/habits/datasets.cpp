@@ -63,6 +63,7 @@ namespace habits {
                     #pragma omp task
                     {
                         it.value().as<trajectory3d>().filter_elements(dropout_filter);
+                        it.value().as<trajectory3d>().set_start_time(0.0);
                         it.value().as<trajectory3d>().resample(resample_frequency); // lets try 20hz first
                     }
                 }
@@ -73,6 +74,7 @@ namespace habits {
                     #pragma omp task
                     {
                         it.value().as<trajectory3d>().filter_elements(dropout_filter);
+                        it.value().as<trajectory3d>().set_start_time(0.0);
                         it.value().as<trajectory3d>().resample(resample_frequency); // lets try 20hz first
                     }
                 }
