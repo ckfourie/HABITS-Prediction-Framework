@@ -78,6 +78,14 @@ namespace habits {
                 }
             }
         }
+//        for (auto it = marker1.begin(); it != marker1.end(); ++it) {
+//            it.value().as<trajectory3d>().filter_elements(dropout_filter);
+//            it.value().as<trajectory3d>().resample(resample_frequency); // lets try 20hz first
+//        }
+//        for (auto it = marker2.begin(); it != marker2.end(); ++it) {
+//            it.value().as<trajectory3d>().filter_elements(dropout_filter);
+//            it.value().as<trajectory3d>().resample(resample_frequency); // lets try 20hz first
+//        }
         SLOG(trace) << "dataset::load_phasespace_dataset:: filtered dropouts and resampled in " << t.elapsed() << " seconds, trajectory count = " << marker1.size() + marker2.size();
         m_active_dataset.reset(new trajectory_cluster3d());
         // now insert into map as mean'ed
@@ -88,7 +96,6 @@ namespace habits {
             // all trajectories will have /marker1 as a postfix
             std::string key = keys[i].substr(0,keys[i].length()-8);
             // create mean object
-            SLOG(debug) << key;
             auto obj = mean(marker1[key + "/marker1"].as<trajectory3d>(),marker2[key+"/marker2"].as<trajectory3d>());
             // emplace in map
             m_active_dataset->move_insert(key,std::move(obj));
