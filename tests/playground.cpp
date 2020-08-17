@@ -12,7 +12,7 @@ using namespace representations;
 int main (int argc, char ** argv) {
     representations::trajectory3d::set_interpolation_strategy(representations::trajectory3d::interpolation_style::CUBIC_SPLINE);
     service::core::dataserver::initialize("localhost",62014);
-    habits::load_dataset("bolts",".*");
+    habits::load_dataset("bolts","subject_1");
     service::vtkhl::plot2::plot(habits::active_dataset());
     service::vtkhl::plot2::show(true);
 //    service::core::dataserver::initialize("localhost",62014);

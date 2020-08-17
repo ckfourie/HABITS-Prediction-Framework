@@ -6,10 +6,16 @@ namespace habits {
     namespace segmentation {
         class segmenter {
         public:
+            typedef std::unordered_map<std::string,representations::interfaces::segmentation> map_type;
             explicit segmenter(const representations::interfaces::unordered_collection & collection);
+            // expose iterators 
+            map_type::iterator begin(){return m_segmentations.begin();}
+            map_type::const_iterator begin() const {return m_segmentations.begin();}
+            map_type::iterator end(){return m_segmentations.end();}
+            map_type::const_iterator end() const {return m_segmentations.end();}
         protected:
             std::reference_wrapper<const representations::interfaces::unordered_collection> m_collection_reference;
-            std::unordered_map<std::string,representations::interfaces::segmentation> m_segmentations;
+            map_type m_segmentations;
         };
     }
 }
