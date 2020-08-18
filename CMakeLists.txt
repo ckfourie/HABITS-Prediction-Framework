@@ -66,8 +66,8 @@ list(APPEND HABITS_FRAMEWORK_SOURCES
     src/habits/core/options.cpp
     include/habits/datasets.h
     src/habits/datasets.cpp
-    include/habits/segmentation/segmenter.h
-    src/habits/segmentation/segmenter.cpp
+    include/habits/segmentation/interfaces/segmentation.h
+    src/habits/segmentation/interfaces/segmentation.cpp
 #    include/hap/data/maps/event_pair_mapping.h
 #    src/hap/data/maps/event_pair_mapping.cpp
 #    include/hap/data/maps/goal_region_mapping.h

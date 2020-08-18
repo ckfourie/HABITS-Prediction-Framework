@@ -13,8 +13,8 @@ int main (int argc, char ** argv) {
     representations::trajectory3d::set_interpolation_strategy(representations::trajectory3d::interpolation_style::CUBIC_SPLINE);
     service::core::dataserver::initialize("localhost",62014);
     habits::load_dataset("bolts","subject_1");
-    service::vtkhl::plot2::plot(habits::active_dataset());
-    service::vtkhl::plot2::show(true);
+    service::vtkhl::plot3::plot(habits::active_dataset());
+    service::vtkhl::plot3::show(true);
 //    service::core::dataserver::initialize("localhost",62014);
 //    std::string dataset_name = "bolt_placement_dataset", subject_regex = "subject_1";
 //    auto marker1 = service::datasets::read_representation<interfaces::homogeneous_cluster,trajectory3d>(dataset_name+"/" + subject_regex,"/trajectories/run17","marker1");
