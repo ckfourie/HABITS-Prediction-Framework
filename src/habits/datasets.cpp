@@ -5,6 +5,7 @@
 #include <representations/trajectory.h>
 #include <service/datasets.h>
 #include <gppe/timing.h>
+#include <representations/operations/ordered_collection_operations.h>
 using namespace representations;
 namespace habits {
     // declare dataset load function here
@@ -21,6 +22,7 @@ namespace habits {
     });
 
     boost::shared_ptr<interfaces::unordered_collection> m_active_dataset;
+    boost::shared_ptr<interfaces::unordered_collection> m_goal_information;
     void load_phasespace_dataset(const std::string & dataset_name, const std::string & subject_regex);
 
     const interfaces::unordered_collection &active_dataset() {
@@ -32,6 +34,13 @@ namespace habits {
         if (m_load_map.count(dataset_name) > 0) m_load_map[dataset_name](subject_regex);
         else throw std::runtime_error("dataset: " + dataset_name + " doesn't have an associated load function");
         return active_dataset();
+    }
+    const representations::interfaces::unordered_collection &goal_information() {
+        if (!m_goal_information) {
+            if (!m_active_dataset) throw std::runtime_error("habits::active_dataset():: need to load a dataset first");
+            else throw std::runtime_error("no goal information available for dataset");
+        }
+        return *m_goal_information;
     }
 
     void load_bolt_placement_dataset(const std::string & subject_regex){
@@ -80,14 +89,6 @@ namespace habits {
                 }
             }
         }
-//        for (auto it = marker1.begin(); it != marker1.end(); ++it) {
-//            it.value().as<trajectory3d>().filter_elements(dropout_filter);
-//            it.value().as<trajectory3d>().resample(resample_frequency); // lets try 20hz first
-//        }
-//        for (auto it = marker2.begin(); it != marker2.end(); ++it) {
-//            it.value().as<trajectory3d>().filter_elements(dropout_filter);
-//            it.value().as<trajectory3d>().resample(resample_frequency); // lets try 20hz first
-//        }
         SLOG(trace) << "dataset::load_phasespace_dataset:: filtered dropouts and resampled in " << t.elapsed() << " seconds, trajectory count = " << marker1.size() + marker2.size();
         m_active_dataset.reset(new trajectory_cluster3d());
         // now insert into map as mean'ed
@@ -103,6 +104,49 @@ namespace habits {
             m_active_dataset->move_insert(key,std::move(obj));
         }
         SLOG(trace) << "dataset::load_phasespace_dataset:: calculated means in " << t.elapsed();
+        // load goal information
+        m_goal_information.reset(new point_cluster3d());
+        marker1 = service::datasets::read_representation<interfaces::homogeneous_cluster,trajectory3d>(dataset_name+"/" + subject_regex,"/goal/.*","marker1");
+        marker2 = service::datasets::read_representation<interfaces::homogeneous_cluster,trajectory3d>(dataset_name+"/" + subject_regex,"/goal/.*","marker2");
+        #pragma omp parallel default (none) shared(marker1,marker2,dropout_filter,resample_frequency)
+        {
+            #pragma omp single
+            {
+                for (auto it = marker1.begin(); it != marker1.end(); ++it) {
+                    #pragma omp task
+                    {
+                        it.value().as<trajectory3d>().filter_elements(dropout_filter);
+                    }
+                }
+            }
+            #pragma omp single
+            {
+                for (auto it = marker2.begin(); it != marker2.end(); ++it) {
+                    #pragma omp task
+                    {
+                        it.value().as<trajectory3d>().filter_elements(dropout_filter);
+                    }
+                }
+            }
+        }
+        // now insert into map as mean'ed
+        t.reset();
+        keys = marker1.keys();
+        #pragma omp parallel for default(none) shared(keys,marker1,marker2,m_goal_information)
+        for (int i = 0; i < keys.size(); i++) {
+            // all trajectories will have /marker1 as a postfix
+            std::string key = keys[i].substr(0,keys[i].length()-8);
+            // create mean object
+            auto m = mean(marker1[key + "/marker1"].as<trajectory3d>(),marker2[key+"/marker2"].as<trajectory3d>());
+            if (m.size() == 0) {
+                SLOG(error) << "invalid goal position for key=" << key;
+                continue;
+            }
+            auto obj = average_value(m);
+            // emplace in map
+            m_goal_information->move_insert(key,std::move(obj));
+        }
+
     }
 }
 
