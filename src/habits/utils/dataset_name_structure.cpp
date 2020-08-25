@@ -9,7 +9,15 @@ habits::utils::dataset_name_structure::dataset_name_structure(const std::string 
     std::vector<std::string> split = gppe::to_vector<std::string>(items.at(0),"/");
     dataset_name = split[0];
     subject_name = split[1];
-    DEBUG_VALUE(dataset_name);
-    DEBUG_VALUE(subject_name);
-    DEBUG_VALUE(data_element_name);
+}
+
+namespace habits {
+    namespace utils {
+        std::ostream& operator<<(std::ostream & os, const dataset_name_structure & obj){
+            os << "dataset_name = " << obj.dataset_name;
+            os << ", subject_name = " << obj.subject_name;
+            os << ", data_element_name = " << obj.data_element_name;
+            return os;
+        }
+    }
 }
