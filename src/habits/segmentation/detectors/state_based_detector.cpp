@@ -8,7 +8,7 @@ representations::interfaces::segmentation habits::segmentation::detectors::state
     representations::interfaces::segmentation output (collection);
     std::vector<int> binary_vector (collection.size(),0);
     // now run the detector
-    #pragma omp parallel for default(none) shared(collection,binary_vector,m_zero_order_tests,m_first_order_tests,m_second_order_tests)
+//    #pragma omp parallel for default(none) shared(collection,binary_vector,m_zero_order_tests,m_first_order_tests,m_second_order_tests)
     for (int i = 0; i < collection.size(); i++) {
         bool valid = true;
         for (const auto & f : m_zero_order_tests) {
@@ -25,6 +25,28 @@ representations::interfaces::segmentation habits::segmentation::detectors::state
         }
         binary_vector[i] = valid;
     }
+    // remove short segments
+    bool state = false; // false is low, true is high
+    int counter = 0;
+    for (int i = 0; i < binary_vector.size(); i++) {
+        if (!state && binary_vector[i]){
+            state = true;
+            counter = 0;
+        }
+        if (state && binary_vector[i]){
+            counter++;
+        }
+        if (state && !binary_vector[i]){
+            state = false;
+            if (counter < 25) {
+                int j = i-1;
+                while (j > 0) {
+                    if (binary_vector[j]) binary_vector[j] = 0;
+                    else break;
+                }
+            }
+        }
+    }
     // parse binary vector to find start and end indices
     for (int i = 1; i < binary_vector.size(); i++){
         // rising edge
@@ -39,7 +61,7 @@ habits::segmentation::detectors::state_based_detector::state_based_detector(cons
     m_entry_event.id(hash_function("entry_event")+m_base_id);
     m_exit_event.id(hash_function("exit_event")+m_base_id);
     m_entry_event.label("state rising edge: " + std::to_string(m_base_id));
-    m_entry_event.label("state falling edge: " + std::to_string(m_base_id));
+    m_exit_event.label("state falling edge: " + std::to_string(m_base_id));
 }
 habits::segmentation::detectors::state_based_detector::state_based_detector(const std::string &base_name) {
     // try get base_id from name
@@ -51,6 +73,6 @@ habits::segmentation::detectors::state_based_detector::state_based_detector(cons
         m_entry_event.id(hash_function("entry_event")+m_base_id);
         m_exit_event.id(hash_function("exit_event")+m_base_id);
         m_entry_event.label("state rising edge: " + std::to_string(m_base_id));
-        m_entry_event.label("state falling edge: " + std::to_string(m_base_id));
+        m_exit_event.label("state falling edge: " + std::to_string(m_base_id));
     } else throw std::runtime_error("invalid name");
 }

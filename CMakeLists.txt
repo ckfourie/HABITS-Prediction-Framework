@@ -76,6 +76,8 @@ list(APPEND HABITS_FRAMEWORK_SOURCES
     src/habits/segmentation/detectors/state_based_detector.cpp
     include/habits/segmentation/interfaces/detector.h
     include/habits/utils/setup_omp.h
+    include/habits/data/activity_segmentation.h
+    src/habits/data/activity_segmentation.cpp
 #    include/hap/data/maps/event_pair_mapping.h
 #    src/hap/data/maps/event_pair_mapping.cpp
 #    include/hap/data/maps/goal_region_mapping.h

@@ -34,6 +34,8 @@ bool state_based_segmentation::try_subject_detector_map(const std::string &name,
         auto local_segmentation = it->second->run(trajectory);
         segmentation += local_segmentation;
     }
+    // filter for short segments
+    segmentation.filter_short_segments(12);
     insert(name,segmentation);
     return true;
 }
@@ -50,11 +52,11 @@ void state_based_segmentation::load_detectors_from_goal_information() {
             // add a position check
             detector->add_zero_order_detection([it](const representations::interfaces::representation & d)->bool {
                 double distance = d.distance(*it);
-                return distance < 100;
+                return distance < 80;
             });
             detector->add_first_order_detection([](const representations::interfaces::representation & d)->bool {
                double distance = representations::norm(d);
-               return distance < 180;
+               return distance < 200;
             });
             m_detector_map[names.subject_name].emplace(names.data_element_name,detector);
         } else {
