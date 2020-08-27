@@ -1,6 +1,7 @@
 #include <simple-logger/simple-logger.h>
 #include <service/core/dataserver.h>
 #include <service/datasets.h>
+#include <service/parameters.h>
 #include <habits/datasets.h>
 #include <habits/core/options.h>
 #include <service/vtkhl/plot3.h>
@@ -16,20 +17,28 @@
 #include <gppe/string_manipulations.h>
 using namespace representations;
 int main (int argc, char ** argv) {
+    service::core::dataserver::initialize("localhost",62014);
     habits::utils::setup_omp();
     representations::trajectory3d::set_interpolation_strategy(representations::trajectory3d::interpolation_style::CUBIC_SPLINE);
     service::core::dataserver::initialize("localhost",62014);
-    habits::load_dataset("bolts","subject_1");
+    service::parameters::config::set_project("hap");
+    habits::load_dataset("cubes","subject_[1-8]");
+    auto trajectory = (*habits::active_dataset().begin()).as<trajectory3d>();
+    Eigen::VectorXd velocity (trajectory.size());
+    for (int i = 0; i < trajectory.size();i++){
+        velocity[i] = trajectory.ddt().as<trajectory3d>().at(i).element().norm2();
+    }
+//    service::vtkhl::plot2::plot(velocity);
+//    service::vtkhl::plot2::show(true);
     habits::segmentation::state_based_segmentation segmentation (habits::active_dataset());
-
     habits::data::activity_segmentation by_activities(segmentation);
     for (auto it = by_activities.begin(); it != by_activities.end(); ++it) {
         SLOG(debug) << it.key() << " size =  " <<  it.value().as<representations::interfaces::segment_cluster>().size();
-        service::vtkhl::plot3::figure(it.key());
-        service::vtkhl::plot3::plot(*it);
+//        service::vtkhl::plot3::figure(it.key());
+//        service::vtkhl::plot3::plot(*it);
     }
-    service::vtkhl::plot3::show(true);
-//    // plot the derivatives
-//    service::vtkhl::plot3::plot(segmentation);
 //    service::vtkhl::plot3::show(true);
+//    // plot the derivatives
+    service::vtkhl::plot3::plot(segmentation);
+    service::vtkhl::plot3::show(true);
 }

@@ -26,27 +26,27 @@ representations::interfaces::segmentation habits::segmentation::detectors::state
         binary_vector[i] = valid;
     }
     // remove short segments
-    bool state = false; // false is low, true is high
-    int counter = 0;
-    for (int i = 0; i < binary_vector.size(); i++) {
-        if (!state && binary_vector[i]){
-            state = true;
-            counter = 0;
-        }
-        if (state && binary_vector[i]){
-            counter++;
-        }
-        if (state && !binary_vector[i]){
-            state = false;
-            if (counter < 25) {
-                int j = i-1;
-                while (j > 0) {
-                    if (binary_vector[j]) binary_vector[j] = 0;
-                    else break;
-                }
-            }
-        }
-    }
+//    bool state = false; // false is low, true is high
+//    int counter = 0;
+//    for (int i = 0; i < binary_vector.size(); i++) {
+//        if (!state && binary_vector[i]){
+//            state = true;
+//            counter = 0;
+//        }
+//        if (state && binary_vector[i]){
+//            counter++;
+//        }
+//        if (state && !binary_vector[i]){
+//            state = false;
+//            if (counter < 25) {
+//                int j = i-1;
+//                while (j > 0) {
+//                    if (binary_vector[j]) binary_vector[j] = 0;
+//                    else break;
+//                }
+//            }
+//        }
+//    }
     // parse binary vector to find start and end indices
     for (int i = 1; i < binary_vector.size(); i++){
         // rising edge

@@ -6,6 +6,8 @@
 #include <representations/operations/generic_operations.h>
 #include <service/vtkhl/plot2.h>
 #include <service/vtkhl/plot3.h>
+#include <service/parameters.h>
+#include <gppe/file_operations.h>
 using namespace habits::segmentation;
 
 state_based_segmentation::state_based_segmentation(const representations::interfaces::unordered_collection &collection)
@@ -50,14 +52,28 @@ void state_based_segmentation::load_detectors_from_goal_information() {
             // create detector
             boost::shared_ptr<detectors::state_based_detector> detector (new detectors::state_based_detector(names.data_element_name));
             // add a position check
-            detector->add_zero_order_detection([it](const representations::interfaces::representation & d)->bool {
-                double distance = d.distance(*it);
-                return distance < 80;
-            });
-            detector->add_first_order_detection([](const representations::interfaces::representation & d)->bool {
-               double distance = representations::norm(d);
-               return distance < 200;
-            });
+            try {
+                double radius = service::parameters::read({gppe::path_join(names.dataset_name,names.subject_name)},gppe::path_join(names.data_element_name,"event_region_radius")).primitive<double>();
+                detector->add_zero_order_detection([radius,it](const representations::interfaces::representation & d)->bool {
+                    double distance = d.distance(*it);
+                    return distance < radius;
+                });
+            } catch (const std::exception & e) {
+                SLOG(error) << e.what();
+                throw std::runtime_error("couldn't create position check");
+            }
+            try {
+                double velocity_limit = service::parameters::read({gppe::path_join(names.dataset_name,names.subject_name)},gppe::path_join(names.data_element_name,"velocity_limit")).primitive<double>();
+                detector->add_first_order_detection([velocity_limit](const representations::interfaces::representation & d)->bool {
+                    double distance = representations::norm(d);
+                    return distance < velocity_limit*1400;
+                });
+            } catch (const std::exception & e) {
+                SLOG(error) << e.what();
+                throw std::runtime_error("couldn't create velocity check");
+            }
+
+
             m_detector_map[names.subject_name].emplace(names.data_element_name,detector);
         } else {
             SLOG(warning) << "state_based_segmentation:: multiple entries for " << it.key();
