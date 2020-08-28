@@ -25,19 +25,8 @@ int main (int argc, char ** argv) {
     habits::load_dataset("cubes","subject_[1-8]");
     auto trajectory = (*habits::active_dataset().begin()).as<trajectory3d>();
     Eigen::VectorXd velocity (trajectory.size());
-    for (int i = 0; i < trajectory.size();i++){
-        velocity[i] = trajectory.ddt().as<trajectory3d>().at(i).element().norm2();
-    }
-//    service::vtkhl::plot2::plot(velocity);
-//    service::vtkhl::plot2::show(true);
     habits::segmentation::state_based_segmentation segmentation (habits::active_dataset());
     habits::data::activity_segmentation by_activities(segmentation);
-    for (auto it = by_activities.begin(); it != by_activities.end(); ++it) {
-        SLOG(debug) << it.key() << " size =  " <<  it.value().as<representations::interfaces::segment_cluster>().size();
-//        service::vtkhl::plot3::figure(it.key());
-//        service::vtkhl::plot3::plot(*it);
-    }
-//    service::vtkhl::plot3::show(true);
 //    // plot the derivatives
     service::vtkhl::plot3::plot(segmentation);
     service::vtkhl::plot3::show(true);

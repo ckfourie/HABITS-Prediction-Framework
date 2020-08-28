@@ -78,6 +78,9 @@ list(APPEND HABITS_FRAMEWORK_SOURCES
     include/habits/utils/setup_omp.h
     include/habits/data/activity_segmentation.h
     src/habits/data/activity_segmentation.cpp
+    include/habits/clustering/cluster_trajectories.h
+    src/habits/clustering/cluster_trajectories.cpp
+
 #    include/hap/data/maps/event_pair_mapping.h
 #    src/hap/data/maps/event_pair_mapping.cpp
 #    include/hap/data/maps/goal_region_mapping.h
