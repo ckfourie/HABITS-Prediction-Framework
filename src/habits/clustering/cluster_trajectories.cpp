@@ -1,4 +1,5 @@
 #include <habits/clustering/cluster_trajectories.h>
+#include <km/mixture_em_agl.h>
 habits::clustering::cluster_trajectories::cluster_trajectories(const representations::interfaces::segment_cluster_group &cluster_group) {
     run(cluster_group);
 }
@@ -8,6 +9,6 @@ void habits::clustering::cluster_trajectories::run(const representations::interf
     }
 }
 std::vector<boost::shared_ptr<representations::interfaces::ordered_collection>> habits::clustering::cluster_trajectories::calculate_mean_trajectories(const representations::interfaces::segment_cluster &cluster) {
-    // magic here I guess
-    
+
+
 }

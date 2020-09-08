@@ -4,12 +4,12 @@
 #include <gppe/string_manipulations.h>
 #include <simple-logger/simple-logger.h>
 
-representations::interfaces::segmentation habits::segmentation::detectors::state_based_detector::run(const representations::interfaces::ordered_collection &collection) {
+representations::interfaces::segmentation habits::segmentation::detectors::state_based_detector::run(const representations::interfaces::ordered_collection &collection, const unsigned long & start_index) {
     representations::interfaces::segmentation output (collection);
     std::vector<int> binary_vector (collection.size(),0);
     // now run the detector
 //    #pragma omp parallel for default(none) shared(collection,binary_vector,m_zero_order_tests,m_first_order_tests,m_second_order_tests)
-    for (int i = 0; i < collection.size(); i++) {
+    for (unsigned long i = start_index; i < collection.size(); i++) {
         bool valid = true;
         for (const auto & f : m_zero_order_tests) {
             valid &= f(collection.at(i));
@@ -25,30 +25,9 @@ representations::interfaces::segmentation habits::segmentation::detectors::state
         }
         binary_vector[i] = valid;
     }
-    // remove short segments
-//    bool state = false; // false is low, true is high
-//    int counter = 0;
-//    for (int i = 0; i < binary_vector.size(); i++) {
-//        if (!state && binary_vector[i]){
-//            state = true;
-//            counter = 0;
-//        }
-//        if (state && binary_vector[i]){
-//            counter++;
-//        }
-//        if (state && !binary_vector[i]){
-//            state = false;
-//            if (counter < 25) {
-//                int j = i-1;
-//                while (j > 0) {
-//                    if (binary_vector[j]) binary_vector[j] = 0;
-//                    else break;
-//                }
-//            }
-//        }
-//    }
     // parse binary vector to find start and end indices
-    for (int i = 1; i < binary_vector.size(); i++){
+    for (unsigned long i = start_index; i < binary_vector.size(); i++){
+        if (i==0) continue;
         // rising edge
         if (binary_vector[i] && !binary_vector[i-1]) output.add_segmentation_index(representations::interfaces::semantic_index(i,m_entry_event));
         // falling edge

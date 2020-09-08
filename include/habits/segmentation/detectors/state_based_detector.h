@@ -6,9 +6,9 @@ namespace habits {
         namespace detectors {
             class state_based_detector : public interfaces::detector {
             public:
-                state_based_detector(const long & base_id);
-                state_based_detector(const std::string & base_name);
-                representations::interfaces::segmentation run (const representations::interfaces::ordered_collection & collection) override;
+                explicit state_based_detector(const long & base_id);
+                explicit state_based_detector(const std::string & base_name);
+                representations::interfaces::segmentation run (const representations::interfaces::ordered_collection & collection, const unsigned long & start_index) override;
                 void add_zero_order_detection(const std::function<bool(const representations::interfaces::representation &)> & test){m_zero_order_tests.emplace_back(test);}
                 void add_first_order_detection(const std::function<bool(const representations::interfaces::representation &)> & test){m_first_order_tests.emplace_back(test);}
                 void add_second_order_detection(const std::function<bool(const representations::interfaces::representation &)> & test){m_second_order_tests.emplace_back(test);}
