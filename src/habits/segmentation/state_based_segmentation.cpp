@@ -52,24 +52,12 @@ bool state_based_segmentation::try_subject_detector_map(const std::string &name,
         /// update segmentation from each detector
         // run the detectors
         for (auto it = local_detectors.begin(); it != local_detectors.end();++it){
-            // run from current index
-            auto local_segmentation = it->second->run(trajectory,index);
-            // skip if nothing is detected (segmentation will consist of a single segment)
-            if (local_segmentation.size()==1) continue;
-            bool first = true;
-            for (auto sit = local_segmentation.begin(); sit != local_segmentation.end();++sit) {
-                // look at each segment
-                const auto & ref = sit->as<const representations::interfaces::segment>();
-                // we don't want to add segmentation indicies if they are:
-                //      1.  the same as the last index already added (rising / falling edge)
-                //      2.  they are on the final time index?
-                if (ref.begin_index().element() == seg_ref.at(seg_ref.size()-1).as<const representations::interfaces::segment>().begin_index().element()) continue;
-//                if (ref.begin_index().index() == trajectory.size()) continue;
-                seg_ref.add_segmentation_index(ref.begin_index());
-            }
+            // get incremental indices vector from detector
+            auto indices_vector = it->second->incremental_run(trajectory);
+            for (auto & id : indices_vector) seg_ref.add_segmentation_index(id);
         }
         // filter
-//        if (seg_ref.at(seg_ref.size()-1).as<const representations::interfaces::segment>().size() > 20) seg_ref.filter_short_segments(12);
+        if (seg_ref.at(seg_ref.size()-1).as<const representations::interfaces::segment>().size() > 20) seg_ref.filter_short_segments(12);
     });
     return true;
 }
@@ -104,8 +92,6 @@ void state_based_segmentation::load_detectors_from_goal_information() {
                 SLOG(error) << e.what();
                 throw std::runtime_error("couldn't create velocity check");
             }
-
-
             m_detector_map[names.subject_name].emplace(names.data_element_name,detector);
         } else {
             SLOG(warning) << "state_based_segmentation:: multiple entries for " << it.key();
