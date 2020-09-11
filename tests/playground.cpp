@@ -39,14 +39,15 @@ int main (int argc, char ** argv) {
     // okay, lets stream this trajectory so we can test things...
     int i = 0;
     for (const auto & point : trajectory){
+        DEBUG_VALUE(i);
         stream << point;
-        if (i++ == 2) {
-            service::vtkhl::plot3::plot(stream);
+        if (i++ == 10) {
+            SLOG(debug) << segmentation.begin().value();
+            service::vtkhl::plot3::plot(segmentation);
             service::vtkhl::plot3::show(false);
 //            service::vtkhl::plot2::plot(stream);
 //            service::vtkhl::plot2::show(false);
         }
-//        usleep(5000);
     }
     SLOG(debug) << "elapsed = " << t.elapsed() << "s";
     SLOG(debug) << stream;

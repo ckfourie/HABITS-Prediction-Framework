@@ -73,7 +73,6 @@ std::vector<representations::interfaces::semantic_index> habits::segmentation::d
     return std::vector<representations::interfaces::semantic_index>(m_indices_map[collection.uuid()].begin()+index_size,m_indices_map[collection.uuid()].end());
 }
 
-
 habits::segmentation::detectors::state_based_detector::state_based_detector(const long &base_id) : m_base_id(base_id) {
     boost::hash<std::string> hash_function;
     m_entry_event.id(hash_function("entry_event")+m_base_id);

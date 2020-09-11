@@ -58,6 +58,7 @@ bool state_based_segmentation::try_subject_detector_map(const std::string &name,
         }
         // filter
         if (seg_ref.at(seg_ref.size()-1).as<const representations::interfaces::segment>().size() > 20) seg_ref.filter_short_segments(12);
+        seg_ref.trigger_callbacks();
     });
     return true;
 }
