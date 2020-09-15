@@ -38,7 +38,7 @@ bool state_based_segmentation::try_subject_detector_map(const std::string &name,
     }
     // filter for short segments
     segmentation.filter_short_segments(12);
-    move_insert(name,std::move(segmentation));
+    insert(name,segmentation);
     // add callback to the collection here to continue segmentation if more data is added.
     trajectory.on_change_signal().connect(boost::bind(&state_based_segmentation::update_segmentation,this,boost::placeholders::_1,name,m_detector_map[names.subject_name]));
     return true;
@@ -48,11 +48,8 @@ void state_based_segmentation::update_segmentation(const representations::interf
     auto & trajectory = dynamic_cast<const representations::interfaces::ordered_collection &>(data);
     if (trajectory.size() < 5) return;
     auto & seg_ref = at(name);
-    // get length that we processed last time
-    unsigned long index = seg_ref.at(seg_ref.size()-1).as<representations::interfaces::segment>().end_index().index();
-    // set to current length
-    seg_ref.at(seg_ref.size()-1).as<representations::interfaces::segment>().end_index().index() = trajectory.size();
     if (trajectory.size() % m_update_interval != 0) return;
+//    seg_ref.at(seg_ref.size()-1).as<representations::interfaces::segment>().end_index().index() = trajectory.size();
     /// update segmentation from each detector
     // run the detectors
     for (const auto & detector : local_detectors){

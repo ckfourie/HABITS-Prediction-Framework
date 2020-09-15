@@ -21,10 +21,9 @@ int main (int argc, char ** argv) {
     service::core::dataserver::initialize("localhost",62014);
     habits::utils::setup_omp();
     representations::trajectory3d::set_interpolation_strategy(representations::trajectory3d::interpolation_style::CUBIC_SPLINE);
-    service::core::dataserver::initialize("localhost",62014);
     service::parameters::config::set_project("hap");
     habits::load_dataset("bolts","subject_1");
-    auto trajectory = (*habits::active_dataset().begin()).as<trajectory3d>();
+    auto trajectory = habits::active_dataset().at("bolt_placement_dataset/subject_1:/trajectories/run2").as<trajectory3d>();
     // create a group
     auto group = trajectory_cluster3d (); auto gt = trajectory_cluster3d (); gt.insert("bolt_placement_dataset/subject_1:/trajectories/ground_truth",trajectory);
     group.move_insert("bolt_placement_dataset/subject_1:/trajectories/stream_test",trajectory3d());
@@ -34,23 +33,25 @@ int main (int argc, char ** argv) {
     SLOG(debug) << ground_truth.at("bolt_placement_dataset/subject_1:/trajectories/ground_truth");
     // plot and time
     gppe::timer t;
-    auto fig = service::vtkhl::plot3::figure("live plot");
-    fig->autozoom(true);
+//    auto fig = service::vtkhl::plot3::figure("live plot");
+//    fig->autozoom(true);
     int i = 0;
     for (const auto & point : trajectory){
-        DEBUG_VALUE(i);
+//        DEBUG_VALUE(i);
         stream << point;
-        if (i++ == 5) {
-            service::vtkhl::plot3::plot(stream);
-            service::vtkhl::plot3::show(false);
-        }
+//        if (i++ == 5) {
+//            service::vtkhl::plot3::plot(segmentation);
+//            service::vtkhl::plot3::show(false);
+//        }
     }
     SLOG(debug) << "elapsed = " << t.elapsed() << "s";
     for (const auto & segment : segmentation) {
         SLOG(debug) << segment;
     }
+    assert(segmentation.begin().value().as<const representations::interfaces::segmentation>()==ground_truth.begin().value().as<const representations::interfaces::segmentation>());
+
     service::vtkhl::plot3::figure("segmentation");
     service::vtkhl::plot3::plot(segmentation);
-    fig->autozoom(false);
+//    fig->autozoom(false);
     service::vtkhl::plot3::show(true);
 }
