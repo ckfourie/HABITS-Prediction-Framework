@@ -20,7 +20,7 @@ namespace habits {
                 std::vector<std::function<bool(const representations::interfaces::representation &)>> m_first_order_tests;
                 std::vector<std::function<bool(const representations::interfaces::representation &)>> m_second_order_tests;
                 std::map<unsigned long, std::vector<int>> m_binary_vector_mapping;
-                std::map<unsigned long, std::vector<representations::interfaces::semantic_index>> m_indices_map; // todo!
+                std::map<unsigned long, std::vector<representations::interfaces::semantic_index>> m_indices_map;
             };
         }
     }

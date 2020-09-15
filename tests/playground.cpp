@@ -36,33 +36,21 @@ int main (int argc, char ** argv) {
     gppe::timer t;
     auto fig = service::vtkhl::plot3::figure("live plot");
     fig->autozoom(true);
-    // okay, lets stream this trajectory so we can test things...
     int i = 0;
     for (const auto & point : trajectory){
         DEBUG_VALUE(i);
         stream << point;
-        if (i++ == 10) {
-            SLOG(debug) << segmentation.begin().value();
-            service::vtkhl::plot3::plot(segmentation);
+        if (i++ == 5) {
+            service::vtkhl::plot3::plot(stream);
             service::vtkhl::plot3::show(false);
-//            service::vtkhl::plot2::plot(stream);
-//            service::vtkhl::plot2::show(false);
         }
     }
     SLOG(debug) << "elapsed = " << t.elapsed() << "s";
-    SLOG(debug) << stream;
     for (const auto & segment : segmentation) {
         SLOG(debug) << segment;
     }
     service::vtkhl::plot3::figure("segmentation");
     service::vtkhl::plot3::plot(segmentation);
     fig->autozoom(false);
-//    service::vtkhl::plot3::figure("final figure");
-//    service::vtkhl::plot3::plot(stream);
     service::vtkhl::plot3::show(true);
-//    habits::segmentation::state_based_segmentation segmentation (habits::active_dataset());
-//    habits::data::activity_segmentation by_activities(segmentation);
-////    // plot the derivatives
-//    service::vtkhl::plot3::plot(segmentation);
-//    service::vtkhl::plot3::show(true);
 }

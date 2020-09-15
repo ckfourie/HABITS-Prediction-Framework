@@ -40,28 +40,30 @@ bool state_based_segmentation::try_subject_detector_map(const std::string &name,
     segmentation.filter_short_segments(12);
     move_insert(name,std::move(segmentation));
     // add callback to the collection here to continue segmentation if more data is added.
-    trajectory.on_change([this,name,local_detectors=m_detector_map[names.subject_name]](const representations::interfaces::representation & collection){
-        auto & trajectory = dynamic_cast<const representations::interfaces::ordered_collection &>(collection);
-        if (trajectory.size() < 5) return;
-        auto & seg_ref = at(name);
-        // get length that we processed last time
-        unsigned long index = seg_ref.at(seg_ref.size()-1).as<representations::interfaces::segment>().end_index().index();
-        // set to current length
-        seg_ref.at(seg_ref.size()-1).as<representations::interfaces::segment>().end_index().index() = trajectory.size();
-        if (trajectory.size() % m_update_interval != 0) return;
-        /// update segmentation from each detector
-        // run the detectors
-        for (auto it = local_detectors.begin(); it != local_detectors.end();++it){
-            // get incremental indices vector from detector
-            auto indices_vector = it->second->incremental_run(trajectory);
-            for (auto & id : indices_vector) seg_ref.add_segmentation_index(id);
-        }
-        // filter
-        if (seg_ref.at(seg_ref.size()-1).as<const representations::interfaces::segment>().size() > 20) seg_ref.filter_short_segments(12);
-        seg_ref.trigger_callbacks();
-    });
+    trajectory.on_change_signal().connect(boost::bind(&state_based_segmentation::update_segmentation,this,boost::placeholders::_1,name,m_detector_map[names.subject_name]));
     return true;
 }
+
+void state_based_segmentation::update_segmentation(const representations::interfaces::representation &data, const std::string & name, const std::map<std::string,boost::shared_ptr<detectors::state_based_detector>> & local_detectors) {
+    auto & trajectory = dynamic_cast<const representations::interfaces::ordered_collection &>(data);
+    if (trajectory.size() < 5) return;
+    auto & seg_ref = at(name);
+    // get length that we processed last time
+    unsigned long index = seg_ref.at(seg_ref.size()-1).as<representations::interfaces::segment>().end_index().index();
+    // set to current length
+    seg_ref.at(seg_ref.size()-1).as<representations::interfaces::segment>().end_index().index() = trajectory.size();
+    if (trajectory.size() % m_update_interval != 0) return;
+    /// update segmentation from each detector
+    // run the detectors
+    for (const auto & detector : local_detectors){
+        // get incremental indices vector from detector
+        auto indices_vector = detector.second->incremental_run(trajectory);
+        for (auto & id : indices_vector) seg_ref.add_segmentation_index(id);
+    }
+    // filter
+    if (seg_ref.at(seg_ref.size()-1).as<const representations::interfaces::segment>().size() > 20) seg_ref.filter_short_segments(12);
+}
+
 void state_based_segmentation::load_detectors_from_goal_information() {
     // create the detector map
     // should be subject id -> vector<detector_ptr> ---> run strategy should then run the segmentation on each
@@ -100,3 +102,4 @@ void state_based_segmentation::load_detectors_from_goal_information() {
     }
     SLOG(trace) << "state_based_segmentation:: loaded detectors from goal information in " << t.elapsed() << " seconds";
 }
+
