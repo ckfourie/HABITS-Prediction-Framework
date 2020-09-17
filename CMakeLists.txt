@@ -96,6 +96,11 @@ if (HABITS_FRAMEWORK_BUILD_UTILITIES)
     add_executable(habits_plot utils/habits_plot.cpp)
     target_link_libraries(habits_plot HABITS_FRAMEWORK ${HABITS_FRAMEWORK_LIBS} )
 endif()
+if (HABITS_FRAMEWORK_TESTS)
+    add_executable(test_habits_live_segmentation tests/test_live_segmentation.cpp)
+    target_link_libraries(test_habits_live_segmentation HABITS_FRAMEWORK ${HABITS_FRAMEWORK_LIBS})
+endif()
+
 ################################### Install ####################################
 install(DIRECTORY include/ DESTINATION include/)
 install(TARGETS HABITS_FRAMEWORK DESTINATION lib/)

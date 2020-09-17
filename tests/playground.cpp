@@ -30,28 +30,23 @@ int main (int argc, char ** argv) {
     trajectory3d & stream = group.at("bolt_placement_dataset/subject_1:/trajectories/stream_test");
     // create segmentation
     habits::segmentation::state_based_segmentation segmentation (group), ground_truth(gt);
-    SLOG(debug) << ground_truth.at("bolt_placement_dataset/subject_1:/trajectories/ground_truth");
+    segmentation.incremental_update_interval(5);
     // plot and time
     gppe::timer t;
-//    auto fig = service::vtkhl::plot3::figure("live plot");
-//    fig->autozoom(true);
+    auto fig = service::vtkhl::plot3::figure("live plot"); fig->autozoom(true);
+    service::vtkhl::plot3::show(false);
     int i = 0;
+    double average = 0;
     for (const auto & point : trajectory){
-//        DEBUG_VALUE(i);
+        gppe::timer stream_time;
         stream << point;
-//        if (i++ == 5) {
-//            service::vtkhl::plot3::plot(segmentation);
-//            service::vtkhl::plot3::show(false);
-//        }
+        average = average + (stream_time.mselapsed() - average)/(++i); stream_time.reset();
+        if (i == 5) service::vtkhl::plot3::plot(segmentation);
+        if (i == 200) fig->autozoom(false);
+        usleep(25000);
     }
     SLOG(debug) << "elapsed = " << t.elapsed() << "s";
-    for (const auto & segment : segmentation) {
-        SLOG(debug) << segment;
-    }
-    assert(segmentation.begin().value().as<const representations::interfaces::segmentation>()==ground_truth.begin().value().as<const representations::interfaces::segmentation>());
-
-    service::vtkhl::plot3::figure("segmentation");
-    service::vtkhl::plot3::plot(segmentation);
-//    fig->autozoom(false);
+    SLOG(debug) << "average update time is " << average << "ms";
+    assert(segmentation.begin().value()==ground_truth.begin().value());
     service::vtkhl::plot3::show(true);
 }

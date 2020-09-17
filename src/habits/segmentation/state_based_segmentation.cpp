@@ -49,16 +49,13 @@ void state_based_segmentation::update_segmentation(const representations::interf
     if (trajectory.size() < 5) return;
     auto & seg_ref = at(name);
     if (trajectory.size() % m_update_interval != 0) return;
-//    seg_ref.at(seg_ref.size()-1).as<representations::interfaces::segment>().end_index().index() = trajectory.size();
     /// update segmentation from each detector
-    // run the detectors
     for (const auto & detector : local_detectors){
-        // get incremental indices vector from detector
         auto indices_vector = detector.second->incremental_run(trajectory);
         for (auto & id : indices_vector) seg_ref.add_segmentation_index(id);
     }
     // filter
-    if (seg_ref.at(seg_ref.size()-1).as<const representations::interfaces::segment>().size() > 20) seg_ref.filter_short_segments(12);
+    if (seg_ref.at(seg_ref.size()-1).as<const representations::interfaces::segment>().size() > 13) seg_ref.filter_short_segments(12);
 }
 
 void state_based_segmentation::load_detectors_from_goal_information() {
