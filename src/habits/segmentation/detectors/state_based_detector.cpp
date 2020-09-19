@@ -43,10 +43,10 @@ std::vector<representations::interfaces::semantic_index> habits::segmentation::d
         m_binary_vector_mapping[collection.uuid()].reserve(1024); // make sure we have suitable space available and don't need to resize unnecessarily
     } else {
         current_size = m_binary_vector_mapping[collection.uuid()].size();
-        m_binary_vector_mapping[collection.uuid()].resize(collection.size(),false);
+        m_binary_vector_mapping[collection.uuid()].resize(collection.size()-1,false);
     }
     if (m_indices_map.count(collection.uuid()) == 0) m_indices_map.emplace(collection.uuid(),std::vector<representations::interfaces::semantic_index>());
-    for (unsigned long i = current_size; i < collection.size(); i++) {
+    for (unsigned long i = current_size; i < collection.size()-1; i++) {
         bool valid = true;
         for (const auto & f : m_zero_order_tests) {
             valid &= f(collection.at(i));

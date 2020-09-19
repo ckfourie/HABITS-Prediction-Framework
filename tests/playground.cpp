@@ -16,7 +16,6 @@
 #include <cctype>
 #include <gppe/string_manipulations.h>
 using namespace representations;
-typedef interfaces::time_group<point3> tp3;
 int main (int argc, char ** argv) {
     service::core::dataserver::initialize("localhost",62014);
     habits::utils::setup_omp();

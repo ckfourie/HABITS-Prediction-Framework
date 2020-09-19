@@ -9,10 +9,10 @@
 using namespace representations;
 namespace habits {
     // declare dataset load function here
-    void load_bolt_placement_dataset(const std::string & subject_regex);
-    void load_cube_placement_dataset(const std::string & subject_regex);
+    void load_bolt_placement_dataset(const std::string & subject_regex, const std::string & trajectory_regex);
+    void load_cube_placement_dataset(const std::string & subject_regex, const std::string & trajectory_regex);
 
-    std::map<std::string,std::function<void(const std::string&)>> m_load_map;
+    std::map<std::string,std::function<void(const std::string&,const std::string&)>> m_load_map;
     gppe::on_startup<void(void)> datasets_on_startup ([](){
         // add load function or aliases here
         m_load_map.emplace("bolt_placement_dataset",&load_bolt_placement_dataset);
@@ -23,15 +23,15 @@ namespace habits {
 
     boost::shared_ptr<interfaces::unordered_collection> m_active_dataset;
     boost::shared_ptr<interfaces::unordered_collection> m_goal_information;
-    void load_phasespace_dataset(const std::string & dataset_name, const std::string & subject_regex);
+    void load_phasespace_dataset(const std::string & dataset_name, const std::string & subject_regex, const std::string & trajectory_regex);
 
     const interfaces::unordered_collection &active_dataset() {
         if (!m_active_dataset) throw std::runtime_error("habits::active_dataset():: need to load a dataset first");
         return *m_active_dataset;
     }
-    const interfaces::unordered_collection &load_dataset(const std::string &dataset_name, const std::string &subject_regex) {
+    const interfaces::unordered_collection &load_dataset(const std::string &dataset_name, const std::string &subject_regex, const std::string & trajectory_regex) {
         // switch dataset name to load data
-        if (m_load_map.count(dataset_name) > 0) m_load_map[dataset_name](subject_regex);
+        if (m_load_map.count(dataset_name) > 0) m_load_map[dataset_name](subject_regex,trajectory_regex);
         else throw std::runtime_error("dataset: " + dataset_name + " doesn't have an associated load function");
         return active_dataset();
     }
@@ -43,20 +43,20 @@ namespace habits {
         return *m_goal_information;
     }
 
-    void load_bolt_placement_dataset(const std::string & subject_regex){
-        load_phasespace_dataset("bolt_placement_dataset",subject_regex);
+    void load_bolt_placement_dataset(const std::string & subject_regex, const std::string & trajectory_regex){
+        load_phasespace_dataset("bolt_placement_dataset",subject_regex,trajectory_regex);
     }
 
-    void load_cube_placement_dataset(const std::string & subject_regex){
-        load_phasespace_dataset("cubes",subject_regex);
+    void load_cube_placement_dataset(const std::string & subject_regex, const std::string & trajectory_regex){
+        load_phasespace_dataset("cubes",subject_regex,trajectory_regex);
     }
 
-    void load_phasespace_dataset(const std::string & dataset_name, const std::string & subject_regex){
+    void load_phasespace_dataset(const std::string & dataset_name, const std::string & subject_regex, const std::string & trajectory_regex){
         SLOG(trace) << "dataset::load_phasespace_dataset:: loading " << dataset_name << " with subjects " << subject_regex;
         // load marker 1 and 2 data:
         gppe::timer t;
-        auto marker1 = service::datasets::read_representation<interfaces::homogeneous_cluster,trajectory3d>(dataset_name+"/" + subject_regex,"/trajectories/.*","marker1");
-        auto marker2 = service::datasets::read_representation<interfaces::homogeneous_cluster,trajectory3d>(dataset_name+"/" + subject_regex,"/trajectories/.*","marker2");
+        auto marker1 = service::datasets::read_representation<interfaces::homogeneous_cluster,trajectory3d>(dataset_name+"/" + subject_regex,trajectory_regex,"marker1");
+        auto marker2 = service::datasets::read_representation<interfaces::homogeneous_cluster,trajectory3d>(dataset_name+"/" + subject_regex,trajectory_regex,"marker2");
         SLOG(trace) << "dataset::load_phasespace_dataset:: retrieved data from server in " << t.elapsed() << "s";
         // filter dropouts
         auto dropout_filter = [](const interfaces::time_group<point<3>> & point)->bool{

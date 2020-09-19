@@ -21,7 +21,7 @@ option (HABITS_FRAMEWORK_BUILD_DISPLAY   "Build vizualizations (required for uti
 option (HABITS_FRAMEWORK_BUILD_MATLAB    "Build matlab functions" OFF)
 set    (HABITS_FRAMEWORK_DATASERVER_PROJECT_NAME "hap" CACHE STRING "The project name for parameters stored on the server")
 ##################################################################################
-add_definitions(-DHAP_PROJECT_NAME="${HABITS_FRAMEWORK_DATASERVER_PROJECT_NAME}")
+add_definitions(-DPROJECT_NAME="${HABITS_FRAMEWORK_DATASERVER_PROJECT_NAME}")
 ##################################################################################
 # Empty variables for compilation files.
 set (HABITS_FRAMEWORK_SOURCES)
@@ -95,6 +95,8 @@ target_link_libraries(hap_playground  HABITS_FRAMEWORK ${HABITS_FRAMEWORK_LIBS} 
 if (HABITS_FRAMEWORK_BUILD_UTILITIES)
     add_executable(habits_plot utils/habits_plot.cpp)
     target_link_libraries(habits_plot HABITS_FRAMEWORK ${HABITS_FRAMEWORK_LIBS} )
+    add_executable(habits_live_segmentation utils/habits_live_segmentation.cpp)
+    target_link_libraries(habits_live_segmentation HABITS_FRAMEWORK ${HABITS_FRAMEWORK_LIBS})
 endif()
 if (HABITS_FRAMEWORK_TESTS)
     add_executable(test_habits_live_segmentation tests/test_live_segmentation.cpp)

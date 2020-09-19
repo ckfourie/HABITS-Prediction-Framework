@@ -1,6 +1,5 @@
 #pragma once
-#include <openmpi/mpi.h>
-
+#include <omp.h>
 namespace habits {
     namespace utils {
         inline void setup_omp () {

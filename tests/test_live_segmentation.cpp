@@ -15,24 +15,17 @@
 int main (int argc, char ** argv) {
     std::string dataset_name = "bolts", subject_regex = "subject_1";
     habits::core::options options("test_live_segmentation","tests the live segmentation framework");
-    if (argc > 1) {
-        options.parse_input(argc,argv);
-        dataset_name = options.get("dataset_name");
-        subject_regex = options.get("subject_regex");
-    } else {
-        // manually initialize
-        service::core::dataserver::initialize(options.get_dataserver_address(),options.get_dataserver_port());
-        simple_logger::set_verbosity_level(simple_logger::verbosity_level::debug);
-        service::parameters::config::set_project("hap");
-        // todo: make positional arguments optional for habits options
-    }
+    options.enable_subject_regex();
+    options.parse_input(argc,argv);
+    dataset_name = options.get("dataset_name");
+    subject_regex = options.get("subject_regex");
     habits::load_dataset(dataset_name,subject_regex);
     // calculate the ground truth segmentations
     habits::segmentation::state_based_segmentation groundtruth_segmentation (habits::active_dataset());
     // now step through the dataset and process incrementally:
     bool passed = true;
     for (auto it = habits::active_dataset().begin(); it != habits::active_dataset().end(); ++it) {
-        const std::string & trajectory_name = it.key(); habits::utils::dataset_name_structure name_structure (trajectory_name);
+        const std::string & trajectory_name = it.key();
         const auto & trajectory = it.value().as<const representations::trajectory3d&>();
         // create a dummy group for autosegmenting
         auto group = representations::trajectory_cluster3d(); group.move_insert(trajectory_name,representations::trajectory3d());
