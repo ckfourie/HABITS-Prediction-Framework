@@ -82,8 +82,18 @@ list(APPEND HABITS_FRAMEWORK_SOURCES
     src/habits/clustering/cluster_trajectories.cpp
     include/habits/predictors/interfaces/predictor.h
     src/habits/predictors/interfaces/predictor.cpp
-    include/habits/clustering/kernel.h
-    src/habits/clustering/kernel.cpp
+    include/habits/clustering/algorithm/kernel.h
+    src/habits/clustering/algorithm/kernel.cpp
+    include/habits/clustering/algorithm/em.h
+    src/habits/clustering/algorithm/em.cpp
+    include/habits/clustering/algorithm/agl.h
+    src/habits/clustering/algorithm/agl.cpp
+    include/habits/predictors/bestpta_predictor.h
+    src/habits/predictors/bestpta_predictor.cpp
+    include/habits/predictors/learn_predictors.h
+    src/habits/predictors/learn_predictors.cpp
+    include/habits/predictors/group_predictors.h
+    src/habits/predictors/group_predictors.cpp
 )
 # This should always come after including submodules, otherwise the definition will be overwritten.
 add_definitions(-DLOG_MODULE="HABITS^2")

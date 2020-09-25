@@ -4,6 +4,7 @@
 #include <map>
 #include <representations/trajectory.h>
 #include <service/datasets.h>
+#include <service/parameters.h>
 #include <gppe/timing.h>
 #include <representations/operations/ordered_collection_operations.h>
 using namespace representations;
@@ -45,10 +46,16 @@ namespace habits {
 
     void load_bolt_placement_dataset(const std::string & subject_regex, const std::string & trajectory_regex){
         load_phasespace_dataset("bolt_placement_dataset",subject_regex,trajectory_regex);
+        // save the bestpta configuration
+        service::parameters::globals::save_locally("/predictors/bpta/config/dataset_name",std::string("bolts"));
+        service::parameters::globals::save_locally("/predictors/bpta/config/configuration_name",std::string("default"));
     }
 
     void load_cube_placement_dataset(const std::string & subject_regex, const std::string & trajectory_regex){
         load_phasespace_dataset("cubes",subject_regex,trajectory_regex);
+        // save the bestpta configuration
+        service::parameters::globals::save_locally("/predictors/bpta/config/dataset_name",std::string("cubes"));
+        service::parameters::globals::save_locally("/predictors/bpta/config/configuration_name",std::string("default"));
     }
 
     void load_phasespace_dataset(const std::string & dataset_name, const std::string & subject_regex, const std::string & trajectory_regex){

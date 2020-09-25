@@ -18,5 +18,4 @@ void habits::data::activity_segmentation::run(const habits::segmentation::interf
         }
     }
     SLOG(trace) << "activity_segmentation:: sorted segments in " << t.elapsed() << "s";
-    SLOG(debug) << "count = " << count;
 }
