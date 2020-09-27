@@ -9,6 +9,7 @@
 #include <representations/trajectory.h>
 #include <representations/interfaces/semantic.h>
 #include <representations/interfaces/segmentation.h>
+#include <representations/operations/semantic_operations.h>
 #include <habits/utils/dataset_name_structure.h>
 #include <habits/utils/setup_omp.h>
 #include <habits/segmentation/state_based_segmentation.h>
@@ -17,6 +18,7 @@
 #include <habits/predictors/learn_predictors.h>
 #include <habits/predictors/bestpta_predictor.h>
 #include <gppe/python.h>
+#include <habits/predictors/group_predictors.h>
 #include <cctype>
 #include <gppe/string_manipulations.h>
 using namespace representations;
@@ -34,4 +36,26 @@ int main (int argc, char ** argv) {
     habits::clustering::cluster_trajectories cluster (activity_group);
     auto predictors = habits::predictors::learn_predictors(cluster,activity_group,habits::predictors::bestpta_predictor());
     SLOG(info) << "trained and completed in " << t.elapsed();
+    // create the group predictors object
+    habits::predictors::group_predictors predictor_group (predictors);
+    // now get a random trajectory, and start a live segmentation (so we know its working):
+    auto it = habits::active_dataset().begin();
+    const std::string & trajectory_name = it.key();
+    const auto & trajectory = it.value().as<const representations::trajectory3d&>();
+    auto group = representations::trajectory_cluster3d(); group.move_insert(trajectory_name,representations::trajectory3d());
+    representations::trajectory3d & stream = group.at(trajectory_name);
+    habits::segmentation::state_based_segmentation test_segmentation (group);
+    predictor_group.set_reference_segmentation(test_segmentation.begin().value().as<const representations::interfaces::segmentation&>());
+    int i = 0;
+    for (const auto & point : trajectory) {
+        gppe::timer update_time;
+        stream << point;
+        SLOG(debug) << "updated point " << i++ << ":: delta_t (ms) = " << update_time.mselapsed();
+    }
+    std::map<representations::interfaces::semantic, representations::interfaces::semantic> semantic_mapping;
+    representations::trajectory1s semantic_prediction = representations::recast_semantic_ids(predictor_group.event_prediction(),semantic_mapping);
+    representations::trajectory1s semantic_prediction_gt = representations::recast_semantic_ids(representations::future_semantic_sequence(test_segmentation.begin().value().as<const representations::interfaces::segmentation>()),semantic_mapping);
+    service::vtkhl::plot2::plot(semantic_prediction_gt);
+    service::vtkhl::plot2::plot(semantic_prediction);
+    service::vtkhl::plot2::show(true);
 }

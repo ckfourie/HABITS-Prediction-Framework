@@ -84,7 +84,6 @@ habits::segmentation::detectors::state_based_detector::state_based_detector(cons
     // try get base_id from name
     std::vector<long> ids = gppe::extract_numbers(base_name);
     if (ids.size() == 1) {
-        // yay!
         m_base_id = ids[0];
         boost::hash<std::string> hash_function;
         m_entry_event.id(hash_function("entry_event")+m_base_id);

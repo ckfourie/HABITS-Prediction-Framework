@@ -18,7 +18,6 @@ int main (int argc, char ** argv) {
         auto group = representations::trajectory_cluster3d(); group.move_insert(trajectory_name,representations::trajectory3d());
         representations::trajectory3d & stream = group.at(trajectory_name);
         habits::segmentation::state_based_segmentation test_segmentation (group);
-        test_segmentation.incremental_update_interval(5);
         auto fig = service::vtkhl::plot3::figure("habits_live_segmentation::" + trajectory_name); fig->autozoom(true);
         service::vtkhl::plot3::show(false); int i = 0;
         for (const auto & point : trajectory) {

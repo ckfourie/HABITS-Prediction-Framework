@@ -46,7 +46,7 @@ bool state_based_segmentation::try_subject_detector_map(const std::string &name,
 
 void state_based_segmentation::update_segmentation(const representations::interfaces::representation &data, const std::string & name, const std::map<std::string,boost::shared_ptr<detectors::state_based_detector>> & local_detectors) {
     auto & trajectory = dynamic_cast<const representations::interfaces::ordered_collection &>(data);
-    if (trajectory.size() < 5) return;
+    if (trajectory.size() < 5) return; // should be 0.05*5 = 0.25 seconds
     auto & seg_ref = at(name);
     if (trajectory.size() % m_update_interval != 0) return;
     /// update segmentation from each detector
