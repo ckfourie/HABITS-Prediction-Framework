@@ -24,9 +24,7 @@ void habits::predictors::bestpta_predictor::reset_state() {
 double habits::predictors::bestpta_predictor::likelihood() const {
     return m_likelihood;
 }
-const representations::interfaces::ordered_collection_base &habits::predictors::bestpta_predictor::spatial_prediction() const {
-    return m_spatial_prediction;
-}
+
 const representations::interfaces::semantic_index &habits::predictors::bestpta_predictor::semantic_temporal_prediction() const {
     return m_semantic_temporal_prediction;
 }
@@ -65,6 +63,8 @@ void habits::predictors::bestpta_predictor::train(const representations::interfa
         SLOG(trace) << "training odtw predictor for " << m_start << "->" << m_end << ": trajectories.size() = " << source_trajectories.size();
         m_odtw.reset(new eigenhl::odtw<double>(mean_projection));
     }
+    m_spatial_prediction.append(m_mean.at(0));
+    m_spatial_prediction.append(m_mean.at(1));
 }
 
 void habits::predictors::bestpta_predictor::update(const representations::interfaces::representation & target) {
@@ -101,6 +101,26 @@ void habits::predictors::bestpta_predictor::update(const representations::interf
             m_likelihood = sqrt(2)/(sqrt(m_covariance*M_PI))*exp(-pow(relative_score,2)/(2*m_covariance));
             m_weighted_likelihood = m_likelihood * m_weight;
             m_semantic_temporal_prediction = representations::interfaces::semantic_index(delta_t*(segment.size() + m_time_to_completion),m_end);
+            // calculate spatial prediction
+            if (segment.size() > 1) {
+                double current_time = segment.at(segment.size() - 1).as<const representations::interfaces::index_element_group_base>().get_abstract_index_value();
+                double previous_time = segment.at(segment.size() - 2).as<const representations::interfaces::index_element_group_base>().get_abstract_index_value();
+                double dt = current_time - previous_time;
+                // project the mean trajectory:
+                if (m_alignment_point <= m_mean.size()-1) {
+                    Eigen::MatrixXd data = m_mean.project3d().block(0, m_alignment_point, 3, m_mean.size() - m_alignment_point);
+                    Eigen::MatrixXd prediction = Eigen::MatrixXd(data.rows() + 1, data.cols());
+                    prediction.block(1, 0, data.rows(), data.cols()) = data;
+                    prediction.block(0, 0, 1, data.cols()) = Eigen::RowVectorXd::LinSpaced(data.cols(), 0, data.cols() - 1) * dt + current_time * Eigen::RowVectorXd::Ones(1, data.cols());
+                    m_spatial_prediction.set_data(prediction);
+                } else {
+                    Eigen::MatrixXd data = m_mean.project3d().block(0, m_alignment_point-1, 3, m_mean.size() - m_alignment_point+1);
+                    Eigen::MatrixXd prediction = Eigen::MatrixXd(data.rows() + 1, data.cols());
+                    prediction.block(1, 0, data.rows(), data.cols()) = data;
+                    prediction.block(0, 0, 1, data.cols()) = Eigen::RowVectorXd::LinSpaced(data.cols(), 0, data.cols() - 1) * dt + current_time * Eigen::RowVectorXd::Ones(1, data.cols());
+                    m_spatial_prediction.set_data(prediction);
+                }
+            }
         }
     } else {
         reset_state();
@@ -108,6 +128,10 @@ void habits::predictors::bestpta_predictor::update(const representations::interf
         m_weighted_likelihood = 0;
         m_score = 1e5;
         m_semantic_temporal_prediction = representations::interfaces::semantic_index(0,m_end);
+    }
+    if (m_spatial_prediction.size() < 2) {
+        m_spatial_prediction.append(m_mean.at(0));
+        m_spatial_prediction.append(m_mean.at(1));
     }
 }
 boost::shared_ptr<habits::predictors::interfaces::predictor> habits::predictors::bestpta_predictor::empty_clone() const {
@@ -117,4 +141,8 @@ void habits::predictors::bestpta_predictor::assign_parameters_from_kernel(const 
     m_covariance = kernel.covariance();
     m_score_offset = kernel.residual_average();
     m_weight = kernel.weight();
+}
+
+const representations::interfaces::ordered_collection_base &habits::predictors::bestpta_predictor::spatial_prediction() const {
+    return m_spatial_prediction;
 }

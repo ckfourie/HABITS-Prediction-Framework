@@ -4,7 +4,7 @@
 #include <service/parameters.h>
 #include <habits/datasets.h>
 #include <habits/core/options.h>
-//#include <service/vtkhl/plot3.h>
+#include <service/vtkhl/plot3.h>
 #include <service/vtkhl/plot2.h>
 #include <representations/trajectory.h>
 #include <representations/interfaces/semantic.h>
@@ -46,11 +46,21 @@ int main (int argc, char ** argv) {
     representations::trajectory3d & stream = group.at(trajectory_name);
     habits::segmentation::state_based_segmentation test_segmentation (group);
     predictor_group.set_reference_segmentation(test_segmentation.begin().value().as<const representations::interfaces::segmentation&>());
+    service::vtkhl::plot3::figure("live update with predictions");
     int i = 0;
     for (const auto & point : trajectory) {
         gppe::timer update_time;
         stream << point;
         SLOG(debug) << "updated point " << i++ << ":: delta_t (ms) = " << update_time.mselapsed();
+        if (i == 5) {
+            service::vtkhl::plot3::plot(stream);
+            for (const auto & p : predictor_group.spatial_predictions()) {
+                auto lines = service::vtkhl::plot3::plot(p.get());
+                lines[0]->set_color(0,255,0);
+            }
+            service::vtkhl::plot3::show(false);
+        }
+
     }
     std::map<representations::interfaces::semantic, representations::interfaces::semantic> semantic_mapping;
     representations::trajectory1s semantic_prediction = representations::recast_semantic_ids(predictor_group.event_prediction(),semantic_mapping);
