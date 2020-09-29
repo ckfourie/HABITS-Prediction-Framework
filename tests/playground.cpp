@@ -47,6 +47,7 @@ int main (int argc, char ** argv) {
     habits::segmentation::state_based_segmentation test_segmentation (group);
     predictor_group.set_reference_segmentation(test_segmentation.begin().value().as<const representations::interfaces::segmentation&>());
     service::vtkhl::plot3::figure("live update with predictions");
+//    service::vtkhl::plot2::figure("live update with predictions");
     int i = 0;
     for (const auto & point : trajectory) {
         gppe::timer update_time;
@@ -54,13 +55,20 @@ int main (int argc, char ** argv) {
         SLOG(debug) << "updated point " << i++ << ":: delta_t (ms) = " << update_time.mselapsed();
         if (i == 5) {
             service::vtkhl::plot3::plot(stream);
+//            service::vtkhl::plot2::plot(stream);
             for (const auto & p : predictor_group.spatial_predictions()) {
                 auto lines = service::vtkhl::plot3::plot(p.get());
                 lines[0]->set_color(0,255,0);
+//                auto lines2 = service::vtkhl::plot2::plot(p.get());
+//                lines2[0]->set_color(0,255,0);
             }
             service::vtkhl::plot3::show(false);
+//            service::vtkhl::plot2::show(false);
         }
-
+        if (update_time.mselapsed() < 50) {
+            long dt = 50 - update_time.mselapsed();
+            if (dt > 0) usleep(dt*1000);
+        }
     }
     std::map<representations::interfaces::semantic, representations::interfaces::semantic> semantic_mapping;
     representations::trajectory1s semantic_prediction = representations::recast_semantic_ids(predictor_group.event_prediction(),semantic_mapping);

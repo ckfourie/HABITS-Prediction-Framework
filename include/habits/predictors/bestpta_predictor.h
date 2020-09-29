@@ -29,8 +29,8 @@ namespace habits {
             unsigned long m_alignment_point;
             representations::interfaces::semantic m_start, m_end;
             representations::trajectory3d m_mean;
+            representations::interfaces::segment m_prediction;
             representations::interfaces::semantic_index m_semantic_temporal_prediction;
-            representations::trajectory3d m_spatial_prediction;
             bool m_timing_prediction_appropriate;
             boost::shared_ptr<gppe::python_class<std::string,std::string>> m_python_object;
             boost::shared_ptr<eigenhl::odtw<double>> m_odtw;

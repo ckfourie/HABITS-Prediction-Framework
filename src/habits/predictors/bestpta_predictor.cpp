@@ -28,7 +28,7 @@ double habits::predictors::bestpta_predictor::likelihood() const {
 const representations::interfaces::semantic_index &habits::predictors::bestpta_predictor::semantic_temporal_prediction() const {
     return m_semantic_temporal_prediction;
 }
-habits::predictors::bestpta_predictor::bestpta_predictor() {
+habits::predictors::bestpta_predictor::bestpta_predictor() : m_prediction(m_mean,representations::interfaces::semantic_index(0,0),representations::interfaces::semantic_index(0,0)) {
     if (!m_python_module_loaded) {
         gppe::import_modules("bestpta.wrapbpta");
         m_python_module_loaded = true;
@@ -38,6 +38,7 @@ void habits::predictors::bestpta_predictor::train(const representations::interfa
     std::string dataset_name = service::parameters::globals::read("/predictors/bpta/config/dataset_name").primitive<std::string>();
     std::string config_name = service::parameters::globals::read("/predictors/bpta/config/configuration_name").primitive<std::string>();
     m_mean = dynamic_cast<const representations::trajectory3d &>(reference_trajectory);
+
     delta_t = m_mean.at(1).index() - m_mean.at(0).index();
     Eigen::MatrixXd mean_projection = m_mean.project3d().transpose();
     std::vector<std::vector<double>> mean_trajectory = eigenhl::to_vector(mean_projection);
@@ -45,6 +46,7 @@ void habits::predictors::bestpta_predictor::train(const representations::interfa
     const auto & segment = source_trajectories.begin().value().as<const representations::interfaces::segment>();
     m_start = segment.begin_index().element();
     m_end = segment.end_index().element();
+    m_prediction = representations::interfaces::segment (m_mean, representations::interfaces::semantic_index(0,m_start),representations::interfaces::semantic_index(m_mean.size(),m_end));
     if (source_trajectories.size() > 12) {
         SLOG(trace) << "training bestpta predictor for " << m_start << "->" << m_end << ": trajectories.size() = " << source_trajectories.size();
         // train our best pta object
@@ -63,8 +65,6 @@ void habits::predictors::bestpta_predictor::train(const representations::interfa
         SLOG(trace) << "training odtw predictor for " << m_start << "->" << m_end << ": trajectories.size() = " << source_trajectories.size();
         m_odtw.reset(new eigenhl::odtw<double>(mean_projection));
     }
-    m_spatial_prediction.append(m_mean.at(0));
-    m_spatial_prediction.append(m_mean.at(1));
 }
 
 void habits::predictors::bestpta_predictor::update(const representations::interfaces::representation & target) {
@@ -97,29 +97,19 @@ void habits::predictors::bestpta_predictor::update(const representations::interf
                 m_score = m_odtw->score() / ((double) m_point_count);
             }
             double relative_score = m_score-m_score_offset; if (relative_score < 0) relative_score = 0;
-//            m_likelihood = 1-tanh(log(1+exp(relative_score/sqrt(m_covariance))));
             m_likelihood = sqrt(2)/(sqrt(m_covariance*M_PI))*exp(-pow(relative_score,2)/(2*m_covariance));
             m_weighted_likelihood = m_likelihood * m_weight;
             m_semantic_temporal_prediction = representations::interfaces::semantic_index(delta_t*(segment.size() + m_time_to_completion),m_end);
-            // calculate spatial prediction
             if (segment.size() > 1) {
                 double current_time = segment.at(segment.size() - 1).as<const representations::interfaces::index_element_group_base>().get_abstract_index_value();
                 double previous_time = segment.at(segment.size() - 2).as<const representations::interfaces::index_element_group_base>().get_abstract_index_value();
                 double dt = current_time - previous_time;
-                // project the mean trajectory:
-                if (m_alignment_point <= m_mean.size()-1) {
-                    Eigen::MatrixXd data = m_mean.project3d().block(0, m_alignment_point, 3, m_mean.size() - m_alignment_point);
-                    Eigen::MatrixXd prediction = Eigen::MatrixXd(data.rows() + 1, data.cols());
-                    prediction.block(1, 0, data.rows(), data.cols()) = data;
-                    prediction.block(0, 0, 1, data.cols()) = Eigen::RowVectorXd::LinSpaced(data.cols(), 0, data.cols() - 1) * dt + current_time * Eigen::RowVectorXd::Ones(1, data.cols());
-                    m_spatial_prediction.set_data(prediction);
-                } else {
-                    Eigen::MatrixXd data = m_mean.project3d().block(0, m_alignment_point-1, 3, m_mean.size() - m_alignment_point+1);
-                    Eigen::MatrixXd prediction = Eigen::MatrixXd(data.rows() + 1, data.cols());
-                    prediction.block(1, 0, data.rows(), data.cols()) = data;
-                    prediction.block(0, 0, 1, data.cols()) = Eigen::RowVectorXd::LinSpaced(data.cols(), 0, data.cols() - 1) * dt + current_time * Eigen::RowVectorXd::Ones(1, data.cols());
-                    m_spatial_prediction.set_data(prediction);
-                }
+                // set mean times:
+                for (long i = m_alignment_point-1; i < m_mean.size(); ++i)
+                    m_mean.at(i).as<representations::interfaces::time_group<representations::point3>>().index() = current_time + (i-m_alignment_point)*dt;
+                // set the segment bounds
+                if (m_alignment_point < m_mean.size()) m_prediction.begin_index().index() = m_alignment_point;
+                else m_prediction.begin_index().index() = m_alignment_point -1;
             }
         }
     } else {
@@ -128,10 +118,6 @@ void habits::predictors::bestpta_predictor::update(const representations::interf
         m_weighted_likelihood = 0;
         m_score = 1e5;
         m_semantic_temporal_prediction = representations::interfaces::semantic_index(0,m_end);
-    }
-    if (m_spatial_prediction.size() < 2) {
-        m_spatial_prediction.append(m_mean.at(0));
-        m_spatial_prediction.append(m_mean.at(1));
     }
 }
 boost::shared_ptr<habits::predictors::interfaces::predictor> habits::predictors::bestpta_predictor::empty_clone() const {
@@ -144,5 +130,5 @@ void habits::predictors::bestpta_predictor::assign_parameters_from_kernel(const 
 }
 
 const representations::interfaces::ordered_collection_base &habits::predictors::bestpta_predictor::spatial_prediction() const {
-    return m_spatial_prediction;
+    return m_prediction;
 }
