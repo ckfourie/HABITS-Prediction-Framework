@@ -2,6 +2,7 @@
 #include <habits/predictors/interfaces/predictor.h>
 #include <representations/interfaces/segmentation.h>
 #include <representations/trajectory.h>
+#include <habits/predictors/sequence_predictor.h>
 namespace habits {
     namespace predictors {
         class group_predictors {

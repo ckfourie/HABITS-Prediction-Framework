@@ -23,6 +23,8 @@ namespace habits {
             const representations::interfaces::semantic& end_event() const override {return m_end;}
             boost::shared_ptr<predictor> empty_clone() const override;
             void assign_parameters_from_kernel (const habits::clustering::algorithm::kernel & kernel) override;
+            double weight() const {return m_weight;}
+            const representations::trajectory3d& mean() const {return m_mean;}
         protected:
             double m_covariance, m_score, m_time_to_completion, m_likelihood, m_weighted_likelihood;
             double m_score_offset, m_weight;

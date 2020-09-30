@@ -38,7 +38,6 @@ void habits::predictors::bestpta_predictor::train(const representations::interfa
     std::string dataset_name = service::parameters::globals::read("/predictors/bpta/config/dataset_name").primitive<std::string>();
     std::string config_name = service::parameters::globals::read("/predictors/bpta/config/configuration_name").primitive<std::string>();
     m_mean = dynamic_cast<const representations::trajectory3d &>(reference_trajectory);
-
     delta_t = m_mean.at(1).index() - m_mean.at(0).index();
     Eigen::MatrixXd mean_projection = m_mean.project3d().transpose();
     std::vector<std::vector<double>> mean_trajectory = eigenhl::to_vector(mean_projection);
@@ -49,9 +48,7 @@ void habits::predictors::bestpta_predictor::train(const representations::interfa
     m_prediction = representations::interfaces::segment (m_mean, representations::interfaces::semantic_index(0,m_start),representations::interfaces::semantic_index(m_mean.size(),m_end));
     if (source_trajectories.size() > 12) {
         SLOG(trace) << "training bestpta predictor for " << m_start << "->" << m_end << ": trajectories.size() = " << source_trajectories.size();
-        // train our best pta object
         m_python_object.reset(new gppe::python_class<std::string,std::string>("WrappedBPTA","bestpta.wrapbpta",dataset_name,config_name));
-        // convert trajectories:
         std::vector<std::vector<std::vector<double>>> sources(source_trajectories.size());
         for (int i = 0; i < source_trajectories.size(); i++) {
             Eigen::MatrixXd projection = source_trajectories[i].project3d().transpose();
@@ -60,7 +57,6 @@ void habits::predictors::bestpta_predictor::train(const representations::interfa
         m_python_object->method<std::vector<std::vector<double>>,std::vector<std::vector<std::vector<double>>>>("train",mean_trajectory,sources);
         m_timing_prediction_appropriate = m_python_object->void_method("motion_segments_found").result<bool>();
         SLOG(trace) << "\tbpta_predictor:: timing prediction appropriate = " << m_timing_prediction_appropriate;
-//        clear();
     } else {
         SLOG(trace) << "training odtw predictor for " << m_start << "->" << m_end << ": trajectories.size() = " << source_trajectories.size();
         m_odtw.reset(new eigenhl::odtw<double>(mean_projection));

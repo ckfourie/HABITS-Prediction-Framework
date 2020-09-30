@@ -94,6 +94,8 @@ list(APPEND HABITS_FRAMEWORK_SOURCES
     src/habits/predictors/learn_predictors.cpp
     include/habits/predictors/group_predictors.h
     src/habits/predictors/group_predictors.cpp
+    include/habits/predictors/sequence_predictor.h
+    src/habits/predictors/sequence_predictor.cpp
 )
 # This should always come after including submodules, otherwise the definition will be overwritten.
 add_definitions(-DLOG_MODULE="HABITS^2")
