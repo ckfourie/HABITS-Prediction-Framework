@@ -15,6 +15,7 @@
 #include <habits/segmentation/state_based_segmentation.h>
 #include <habits/data/activity_segmentation.h>
 #include <habits/clustering/cluster_trajectories.h>
+#include <representations/operations/unordered_collection_operations.h>
 #include <habits/predictors/learn_predictors.h>
 #include <habits/predictors/bestpta_predictor.h>
 #include <gppe/python.h>
@@ -32,7 +33,6 @@ int main (int argc, char ** argv) {
     habits::load_dataset("bolts","subject_1");
     habits::segmentation::state_based_segmentation segmentation (habits::active_dataset());
     habits::predictors::sequence_predictor sequence_predictor (segmentation);
-    // live stuff
     habits::data::activity_segmentation activity_group (segmentation);
     habits::clustering::cluster_trajectories cluster (activity_group);
     auto predictors = habits::predictors::learn_predictors(cluster,activity_group,habits::predictors::bestpta_predictor());

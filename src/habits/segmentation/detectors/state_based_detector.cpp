@@ -77,6 +77,9 @@ habits::segmentation::detectors::state_based_detector::state_based_detector(cons
     boost::hash<std::string> hash_function;
     m_entry_event.id(hash_function("entry_event")+m_base_id);
     m_exit_event.id(hash_function("exit_event")+m_base_id);
+    // set interpretable ids: these are used in ROS at the moment (remove later?)
+    m_entry_event.interpretable_id(m_base_id);
+    m_exit_event.interpretable_id(-m_base_id-1); // so we don't clash at 0
     m_entry_event.label("state rising edge: " + std::to_string(m_base_id));
     m_exit_event.label("state falling edge: " + std::to_string(m_base_id));
 }
@@ -88,6 +91,8 @@ habits::segmentation::detectors::state_based_detector::state_based_detector(cons
         boost::hash<std::string> hash_function;
         m_entry_event.id(hash_function("entry_event")+m_base_id);
         m_exit_event.id(hash_function("exit_event")+m_base_id);
+        m_entry_event.interpretable_id(m_base_id);
+        m_exit_event.interpretable_id(-m_base_id-1); // so we don't clash at 0
         m_entry_event.label("state rising edge: " + std::to_string(m_base_id));
         m_exit_event.label("state falling edge: " + std::to_string(m_base_id));
     } else throw std::runtime_error("invalid name");

@@ -96,6 +96,8 @@ list(APPEND HABITS_FRAMEWORK_SOURCES
     src/habits/predictors/group_predictors.cpp
     include/habits/predictors/sequence_predictor.h
     src/habits/predictors/sequence_predictor.cpp
+    include/habits/results/predictors.h
+    src/habits/results/predictors.cpp
 )
 # This should always come after including submodules, otherwise the definition will be overwritten.
 add_definitions(-DLOG_MODULE="HABITS^2")
@@ -113,6 +115,8 @@ if (HABITS_FRAMEWORK_BUILD_UTILITIES)
     target_link_libraries(habits_live_segmentation HABITS_FRAMEWORK ${HABITS_FRAMEWORK_LIBS})
     add_executable(habits_goal_positions utils/habits_goal_positions.cpp)
     target_link_libraries(habits_goal_positions HABITS_FRAMEWORK ${HABITS_FRAMEWORK_LIBS})
+    add_executable(habits_predictor_performance_statistics utils/habits_predictor_performance_statistics.cpp)
+    target_link_libraries(habits_predictor_performance_statistics HABITS_FRAMEWORK ${HABITS_FRAMEWORK_LIBS})
 endif()
 if (HABITS_FRAMEWORK_TESTS)
     add_executable(test_habits_live_segmentation tests/test_live_segmentation.cpp)
