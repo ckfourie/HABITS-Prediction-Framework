@@ -18,6 +18,10 @@ int main (int argc, char ** argv) {
         auto group = representations::trajectory_cluster3d(); group.move_insert(trajectory_name,representations::trajectory3d());
         representations::trajectory3d & stream = group.at(trajectory_name);
         habits::segmentation::state_based_segmentation test_segmentation (group);
+        auto connection = test_segmentation[test_segmentation.size()-1].on_change_signal().connect([](const representations::interfaces::representation & r){
+            const auto & segmentation = r.as<const representations::interfaces::segmentation>();
+            SLOG(debug) << "easy id = " << segmentation[segmentation.size()-1].begin_index().element().interpretable_id();
+        });
         auto fig = service::vtkhl::plot3::figure("habits_live_segmentation::" + trajectory_name); fig->autozoom(true);
         service::vtkhl::plot3::show(false); int i = 0;
         for (const auto & point : trajectory) {

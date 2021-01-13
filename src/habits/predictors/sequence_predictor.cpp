@@ -98,7 +98,8 @@ const representations::interfaces::segmentation& habits::predictors::sequence_pr
     return *m_current_prediction;
 }
 void habits::predictors::sequence_predictor::set_reference_segmentation(const representations::interfaces::segmentation &target) {
-    target.on_change_signal().connect(boost::bind(&habits::predictors::sequence_predictor::update,this,boost::placeholders::_1));
+    if (m_reference_connection.connected()) m_reference_connection.disconnect();
+    m_reference_connection = target.on_change_signal().connect(boost::bind(&habits::predictors::sequence_predictor::update,this,boost::placeholders::_1));
     update(target);
 }
 void habits::predictors::sequence_predictor::update(const representations::interfaces::representation &src) {

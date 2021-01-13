@@ -20,6 +20,7 @@ namespace habits {
             mutable boost::shared_ptr<representations::interfaces::segmentation> m_current_prediction;
             std::vector<boost::shared_ptr<representations::interfaces::ordered_collection_base>> m_representative_means;
             unsigned long m_total_size = 0;
+            boost::signals2::connection m_reference_connection;
             std::vector<Eigen::MatrixXd> m_durations;
             std::vector<probp::distributions::gmm> m_models;
             std::map<representations::interfaces::semantic, std::map<representations::interfaces::semantic, std::vector<interfaces::predictor::predictor_ptr>>> m_predictor_map;
