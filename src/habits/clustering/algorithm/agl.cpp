@@ -31,6 +31,7 @@ int habits::clustering::algorithm::agl::solve(const representations::interfaces:
         }
     }
     m_kernels = new_kernels;
+    return 0;
 }
 void habits::clustering::algorithm::agl::maximize(const representations::interfaces::unordered_collection &collection) {
     for (int i = 0; i < collection.size(); i++) {
