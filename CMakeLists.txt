@@ -6,7 +6,7 @@ cmake_minimum_required(VERSION 3.5)
 project (HABITS_FRAMEWORK)
 ############################## Compiler Options ##################################
 set(CMAKE_CXX_STANDARD 14)
-set(CMAKE_CXX_FLAGS "${CMAKE_C_FLAGS} -O3 -fPIC -fopenmp -funroll-loops")
+set(CMAKE_CXX_FLAGS "${CMAKE_C_FLAGS} -O3 -fPIC -fopenmp -funroll-loops -Wall -Wextra")
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -O0")
 set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -O0")
 # Set to place executables in root build directory (for ease of testing)
