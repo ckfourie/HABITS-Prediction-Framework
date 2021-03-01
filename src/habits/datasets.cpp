@@ -62,8 +62,8 @@ namespace habits {
         SLOG(trace) << "dataset::load_phasespace_dataset:: loading " << dataset_name << " with subjects " << subject_regex;
         // load marker 1 and 2 data:
         gppe::timer t;
-        auto marker1 = service::datasets::read_representation<interfaces::homogeneous_cluster,trajectory3d>(dataset_name+"/" + subject_regex,trajectory_regex,"marker1");
-        auto marker2 = service::datasets::read_representation<interfaces::homogeneous_cluster,trajectory3d>(dataset_name+"/" + subject_regex,trajectory_regex,"marker2");
+        auto marker1 = service::datasets::read_time_series<interfaces::cluster,time_series3>(dataset_name+"/" + subject_regex,trajectory_regex,"marker1");
+        auto marker2 = service::datasets::read_time_series<interfaces::cluster,time_series3>(dataset_name+"/" + subject_regex,trajectory_regex,"marker2");
         SLOG(trace) << "dataset::load_phasespace_dataset:: retrieved data from server in " << t.elapsed() << "s";
         // filter dropouts
         auto dropout_filter = [](const interfaces::time_group<point<3>> & point)->bool{
@@ -71,50 +71,37 @@ namespace habits {
         };
         double resample_frequency = 20.0;
         t.reset();
-        #pragma omp parallel default (none) shared(marker1,marker2,dropout_filter,resample_frequency)
-        {
-            #pragma omp single
-            {
-                for (auto it = marker1.begin(); it != marker1.end(); ++it) {
-                    #pragma omp task
-                    {
-                        it.value().as<trajectory3d>().filter_elements(dropout_filter);
-                        it.value().as<trajectory3d>().set_start_time(0.0);
-                        it.value().as<trajectory3d>().resample(resample_frequency); // lets try 20hz first
-                    }
-                }
-            }
-            #pragma omp single
-            {
-                for (auto it = marker2.begin(); it != marker2.end(); ++it) {
-                    #pragma omp task
-                    {
-                        it.value().as<trajectory3d>().filter_elements(dropout_filter);
-                        it.value().as<trajectory3d>().set_start_time(0.0);
-                        it.value().as<trajectory3d>().resample(resample_frequency); // lets try 20hz first
-                    }
-                }
-            }
+        // get keys
+        std::vector<std::string> keys_marker1 = marker1.keys(), keys_marker2 = marker2.keys();
+
+        #pragma omp parallel for default (none) shared(keys_marker1,marker1,dropout_filter,resample_frequency)
+        for (size_t i = 0; i < keys_marker1.size(); i++) {
+            marker1[keys_marker1[i]].filter_elements(dropout_filter);
+            marker1[keys_marker1[i]].resample(resample_frequency);
+        }
+        #pragma omp parallel for default (none) shared(keys_marker2,marker2,dropout_filter,resample_frequency)
+        for (size_t i = 0; i < keys_marker2.size(); i++) {
+            marker2[keys_marker2[i]].filter_elements(dropout_filter);
+            marker2[keys_marker2[i]].resample(resample_frequency);
         }
         SLOG(trace) << "dataset::load_phasespace_dataset:: filtered dropouts and resampled in " << t.elapsed() << " seconds, trajectory count = " << marker1.size() + marker2.size();
-        m_active_dataset.reset(new trajectory_cluster3d());
+        m_active_dataset.reset(new time_series_cluster3d());
         // now insert into map as mean'ed
         t.reset();
         std::vector<std::string> keys = marker1.keys();
         #pragma omp parallel for default(none) shared(keys,marker1,marker2,m_active_dataset)
         for (int i = 0; i < keys.size(); i++) {
-            // all trajectories will have /marker1 as a postfix
+            // all trajectories will have /marker1 or /marker2 as a postfix
             std::string key = keys[i].substr(0,keys[i].length()-8);
             // create mean object
-            auto obj = mean(marker1[key + "/marker1"].as<trajectory3d>(),marker2[key+"/marker2"].as<trajectory3d>());
-            // emplace in map
-            m_active_dataset->move_insert(key,std::move(obj));
+            auto obj = mean(marker1[key + "/marker1"].as<time_series3>(),marker2[key+"/marker2"].as<time_series3>());
+            m_active_dataset->insert(key,obj);
         }
         SLOG(trace) << "dataset::load_phasespace_dataset:: calculated means in " << t.elapsed();
         // load goal information
         m_goal_information.reset(new point_cluster3d());
-        marker1 = service::datasets::read_representation<interfaces::homogeneous_cluster,trajectory3d>(dataset_name+"/" + subject_regex,"/goal/.*","marker1");
-        marker2 = service::datasets::read_representation<interfaces::homogeneous_cluster,trajectory3d>(dataset_name+"/" + subject_regex,"/goal/.*","marker2");
+        marker1 = service::datasets::read_representation<interfaces::cluster,time_series3>(dataset_name+"/" + subject_regex,"/goal/.*","marker1");
+        marker2 = service::datasets::read_representation<interfaces::cluster,time_series3>(dataset_name+"/" + subject_regex,"/goal/.*","marker2");
         #pragma omp parallel default (none) shared(marker1,marker2,dropout_filter,resample_frequency)
         {
             #pragma omp single
@@ -122,7 +109,7 @@ namespace habits {
                 for (auto it = marker1.begin(); it != marker1.end(); ++it) {
                     #pragma omp task
                     {
-                        it.value().as<trajectory3d>().filter_elements(dropout_filter);
+                        it.value().as<time_series3>().filter_elements(dropout_filter);
                     }
                 }
             }
@@ -131,7 +118,7 @@ namespace habits {
                 for (auto it = marker2.begin(); it != marker2.end(); ++it) {
                     #pragma omp task
                     {
-                        it.value().as<trajectory3d>().filter_elements(dropout_filter);
+                        it.value().as<time_series3>().filter_elements(dropout_filter);
                     }
                 }
             }
@@ -144,7 +131,7 @@ namespace habits {
             // all trajectories will have /marker1 as a postfix
             std::string key = keys[i].substr(0,keys[i].length()-8);
             // create mean object
-            auto m = mean(marker1[key + "/marker1"].as<trajectory3d>(),marker2[key+"/marker2"].as<trajectory3d>());
+            auto m = mean(marker1[key + "/marker1"].as<time_series3>(),marker2[key+"/marker2"].as<time_series3>());
             if (m.size() == 0) {
                 SLOG(error) << "invalid goal position for key=" << key;
                 continue;

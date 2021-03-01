@@ -44,7 +44,6 @@ if (HABITS_FRAMEWORK_BUILD_DISPLAY)
     add_definitions(-DBUILD_DISPLAY)
 endif()
 # Find Development Libraries
-#set(HABITS_FRAMEWORK_MODULE_LIST KernelMethods SimpleLogger ProbabilityPrimitives PhaseSpace DataFiles GPPE EigenHL ActivityRecognition)
 set(HABITS_FRAMEWORK_MODULE_LIST SimpleLogger GPPE EigenHL DataFiles DataServer Representations Services ProbabilityPrimitives KernelMethods PhaseSpace)
 if (HABITS_FRAMEWORK_BUILD_DISPLAY)
     list(APPEND HABITS_FRAMEWORK_MODULE_LIST VTKHL)
@@ -66,38 +65,38 @@ list(APPEND HABITS_FRAMEWORK_SOURCES
     src/habits/core/options.cpp
     include/habits/datasets.h
     src/habits/datasets.cpp
-    include/habits/segmentation/interfaces/segmentation.h
-    src/habits/segmentation/interfaces/segmentation.cpp
-    include/habits/segmentation/state_based_segmentation.h
-    src/habits/segmentation/state_based_segmentation.cpp
-    include/habits/utils/dataset_name_structure.h
-    src/habits/utils/dataset_name_structure.cpp
-    include/habits/segmentation/detectors/state_based_detector.h
-    src/habits/segmentation/detectors/state_based_detector.cpp
-    include/habits/segmentation/interfaces/detector.h
-    include/habits/utils/setup_omp.h
-    include/habits/data/activity_segmentation.h
-    src/habits/data/activity_segmentation.cpp
-    include/habits/clustering/cluster_trajectories.h
-    src/habits/clustering/cluster_trajectories.cpp
-    include/habits/predictors/interfaces/predictor.h
-    src/habits/predictors/interfaces/predictor.cpp
-    include/habits/clustering/algorithm/kernel.h
-    src/habits/clustering/algorithm/kernel.cpp
-    include/habits/clustering/algorithm/em.h
-    src/habits/clustering/algorithm/em.cpp
-    include/habits/clustering/algorithm/agl.h
-    src/habits/clustering/algorithm/agl.cpp
-    include/habits/predictors/bestpta_predictor.h
-    src/habits/predictors/bestpta_predictor.cpp
-    include/habits/predictors/learn_predictors.h
-    src/habits/predictors/learn_predictors.cpp
-    include/habits/predictors/group_predictors.h
-    src/habits/predictors/group_predictors.cpp
-    include/habits/predictors/sequence_predictor.h
-    src/habits/predictors/sequence_predictor.cpp
-    include/habits/results/predictors.h
-    src/habits/results/predictors.cpp
+#    include/habits/segmentation/interfaces/segmentation.h
+#    src/habits/segmentation/interfaces/segmentation.cpp
+#    include/habits/segmentation/state_based_segmentation.h
+#    src/habits/segmentation/state_based_segmentation.cpp
+#    include/habits/utils/dataset_name_structure.h
+#    src/habits/utils/dataset_name_structure.cpp
+#    include/habits/segmentation/detectors/state_based_detector.h
+#    src/habits/segmentation/detectors/state_based_detector.cpp
+#    include/habits/segmentation/interfaces/detector.h
+#    include/habits/utils/setup_omp.h
+#    include/habits/data/activity_segmentation.h
+#    src/habits/data/activity_segmentation.cpp
+#    include/habits/clustering/cluster_trajectories.h
+#    src/habits/clustering/cluster_trajectories.cpp
+#    include/habits/predictors/interfaces/predictor.h
+#    src/habits/predictors/interfaces/predictor.cpp
+#    include/habits/clustering/algorithm/kernel.h
+#    src/habits/clustering/algorithm/kernel.cpp
+#    include/habits/clustering/algorithm/em.h
+#    src/habits/clustering/algorithm/em.cpp
+#    include/habits/clustering/algorithm/agl.h
+#    src/habits/clustering/algorithm/agl.cpp
+#    include/habits/predictors/bestpta_predictor.h
+#    src/habits/predictors/bestpta_predictor.cpp
+#    include/habits/predictors/learn_predictors.h
+#    src/habits/predictors/learn_predictors.cpp
+#    include/habits/predictors/group_predictors.h
+#    src/habits/predictors/group_predictors.cpp
+#    include/habits/predictors/sequence_predictor.h
+#    src/habits/predictors/sequence_predictor.cpp
+#    include/habits/results/predictors.h
+#    src/habits/results/predictors.cpp
 )
 # This should always come after including submodules, otherwise the definition will be overwritten.
 add_definitions(-DLOG_MODULE="HABITS^2")

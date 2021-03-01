@@ -1,6 +1,7 @@
 #pragma once
 #include <boost/shared_ptr.hpp>
 #include <representations/interfaces/collection.h>
+#include <representations/trajectory.h>
 namespace habits {
     // load data, create shared object representation
     const representations::interfaces::unordered_collection & active_dataset();
