@@ -1,31 +1,12 @@
-#include <simple-logger/simple-logger.h>
-#include <service/core/dataserver.h>
-#include <service/datasets.h>
-#include <service/parameters.h>
 #include <habits/datasets.h>
 #include <habits/core/options.h>
-#include <service/vtkhl/plot3.h>
-#include <service/vtkhl/plot2.h>
+#include <gppe/timing.h>
 #include <representations/trajectory.h>
-#include <representations/interfaces/semantic.h>
-#include <representations/interfaces/segmentation.h>
-#include <representations/operations/semantic_operations.h>
-#include <habits/utils/dataset_name_structure.h>
-#include <habits/utils/setup_omp.h>
-#include <habits/segmentation/state_based_segmentation.h>
-#include <habits/data/activity_segmentation.h>
-#include <habits/clustering/cluster_trajectories.h>
-#include <representations/operations/unordered_collection_operations.h>
-#include <habits/predictors/learn_predictors.h>
-#include <habits/predictors/bestpta_predictor.h>
-#include <gppe/python.h>
-#include <habits/predictors/group_predictors.h>
-#include <habits/predictors/sequence_predictor.h>
-#include <cctype>
-#include <gppe/string_manipulations.h>
 using namespace representations;
 int main (int argc, char ** argv) {
+    habits::core::options options ("playground","test functionality (playing around with stuff)");
     gppe::timer t;
+
 //    Py_Initialize();
 //    service::core::dataserver::initialize("localhost",62014);
 //    representations::trajectory3d::set_interpolation_strategy(representations::trajectory3d::interpolation_style::CUBIC_SPLINE);

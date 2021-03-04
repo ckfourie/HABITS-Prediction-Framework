@@ -28,5 +28,5 @@ std::vector<std::string> habits::core::options::get_commands() {
     for (const std::string & command_name : m_commands) {
         command_results.emplace_back(get<std::string>(command_name));
     }
-    return std::move(command_results);
+    return command_results;
 }
