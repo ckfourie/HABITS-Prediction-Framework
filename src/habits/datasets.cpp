@@ -7,6 +7,7 @@
 #include <service/parameters.h>
 #include <gppe/timing.h>
 #include <representations/collection_operations.h>
+#include <service/vtkhl/plot2.h>
 //#include <representations/operations/ordered_collection_operations.h>
 using namespace representations;
 namespace habits {
@@ -61,14 +62,16 @@ namespace habits {
 
     void load_phasespace_dataset(const std::string & dataset_name, const std::string & subject_regex, const std::string & trajectory_regex){
         SLOG(trace) << "dataset::load_phasespace_dataset:: loading " << dataset_name << " with subjects " << subject_regex;
+        double equivalence_threshold = representations::interfaces::representation::get_equivalence_threshold();
         // load marker 1 and 2 data:
         gppe::timer t;
+        std::mutex lock;
         auto marker1 = service::datasets::read_time_series<interfaces::cluster,time_series3>(dataset_name+"/" + subject_regex,trajectory_regex,"marker1");
         auto marker2 = service::datasets::read_time_series<interfaces::cluster,time_series3>(dataset_name+"/" + subject_regex,trajectory_regex,"marker2");
         SLOG(trace) << "dataset::load_phasespace_dataset:: retrieved data from server in " << t.elapsed() << "s";
         // filter dropouts
-        auto dropout_filter = [](const interfaces::time_group<point<3>> & point)->bool{
-            return point.element().x() == -10000 && point.element().y() == -10000 && point.element().z() == -10000;
+        auto dropout_filter = [equivalence_threshold](const interfaces::time_group<point<3>> & point)->bool{
+            return abs(point.element().x() - -10000.0) < equivalence_threshold && abs(point.element().y() - -10000.0) < equivalence_threshold && abs(point.element().z() - -10000.0) < equivalence_threshold;
         };
         double resample_frequency = 20.0;
         t.reset();
@@ -89,46 +92,48 @@ namespace habits {
         // now insert into map as mean'ed
         t.reset();
         std::vector<std::string> keys = marker1.keys();
-        #pragma omp parallel for default(none) shared(keys,marker1,marker2,m_active_dataset)
+        #pragma omp parallel for default(none) shared(keys,marker1,marker2,m_active_dataset,lock)
         for (size_t i = 0; i < keys.size(); i++) {
             // all trajectories will have /marker1 or /marker2 as a postfix
             std::string key = keys[i].substr(0,keys[i].length()-8);
             // create mean object
             auto obj = mean_trajectory(marker1[key + "/marker1"],marker2[key+"/marker2"]);
+            std::lock_guard<std::mutex> lk (lock);
             m_active_dataset->insert(key,obj);
         }
         SLOG(trace) << "dataset::load_phasespace_dataset:: calculated means in " << t.elapsed();
         // load goal information
         m_goal_information.reset(new point_cluster3d());
-        auto goal_dropout_filter = [](const point<3> & point)->bool{
-                return point.x() == -10000 && point.y() == -10000 && point.z() == -10000;
+        auto goal_dropout_filter = [equivalence_threshold](const point<3> & point)->bool{
+                return abs(point.x() - -10000.0) < equivalence_threshold  && abs(point.y() - -10000.0) < equivalence_threshold && abs(point.z() - -10000.0) < equivalence_threshold;
         };
         auto goal_marker1 = service::datasets::read_representation<interfaces::cluster,point_series3>(dataset_name+"/" + subject_regex,"/goal/.*","marker1");
         auto goal_marker2 = service::datasets::read_representation<interfaces::cluster,point_series3>(dataset_name+"/" + subject_regex,"/goal/.*","marker2");
         keys_marker1 = goal_marker1.keys(), keys_marker2 = goal_marker2.keys();
-        #pragma omp parallel for default (none) shared(keys_marker1,goal_marker1,dropout_filter)
+        #pragma omp parallel for default (none) shared(keys_marker1,goal_marker1,goal_dropout_filter)
         for (size_t i = 0; i < keys_marker1.size(); i++) {
             goal_marker1[keys_marker1[i]].filter_elements(goal_dropout_filter);
         }
-        #pragma omp parallel for default (none) shared(keys_marker2,goal_marker2,dropout_filter)
+        #pragma omp parallel for default (none) shared(keys_marker2,goal_marker2,goal_dropout_filter)
         for (size_t i = 0; i < keys_marker2.size(); i++) {
             goal_marker2[keys_marker2[i]].filter_elements(goal_dropout_filter);
         }
         // now insert into map as mean'ed
         t.reset();
-        keys = marker1.keys();
-        #pragma omp parallel for default(none) shared(keys,goal_marker1,goal_marker2,m_goal_information)
+        keys = goal_marker1.keys();
+//        #pragma omp parallel for default(none) shared(keys,goal_marker1,goal_marker2,m_goal_information,lock)
         for (size_t i = 0; i < keys.size(); i++) {
             // all trajectories will have /marker1 as a postfix
             std::string key = keys[i].substr(0,keys[i].length()-8);
             // create mean object
-            auto m = mean_trajectory(goal_marker1[key + "/marker1"],goal_marker2[key+"/marker2"]);
+            auto m = mean_trajectory(goal_marker1[key+"/marker1"],goal_marker2[key+"/marker2"]);
             if (m.size() == 0) {
                 SLOG(error) << "invalid goal position for key=" << key;
                 continue;
             }
             auto obj = mean_value(m);
             // emplace in map
+            std::lock_guard<std::mutex> lk (lock);
             m_goal_information->insert(key,obj);
         }
     }

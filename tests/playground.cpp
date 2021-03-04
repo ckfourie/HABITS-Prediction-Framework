@@ -2,11 +2,27 @@
 #include <habits/core/options.h>
 #include <gppe/timing.h>
 #include <representations/trajectory.h>
+#include <service/vtkhl/plot3.h>
 using namespace representations;
 int main (int argc, char ** argv) {
+    gppe::delta_timer t;
     habits::core::options options ("playground","test functionality (playing around with stuff)");
-    gppe::timer t;
-
+    options.parse_input(argc,argv);
+    simple_logger::set_verbosity_level(simple_logger::verbosity_level::trace);
+    SLOG(debug) << "passed options, trying to get data (options processing took " << t << ")";
+    // print all the goals:
+//    SLOG(debug) << "goals are: " << habits::goal_information();
+    const representations::point_cluster3d & goals = dynamic_cast<const representations::point_cluster3d&> (habits::goal_information());
+    std::vector<std::string> keys = goals.keys();
+    for (int i = 0; i < keys.size(); i++) {
+        SLOG(debug) << "goal::: " << keys[i] << " :: " << goals.at(keys[i]);
+        SLOG(debug) << "goal::: " << keys[i] << " :: (" << goals.at(keys[i])[0] << ", " << goals.at(keys[i])[1] << ", " << goals.at(keys[i])[2] << ")";
+    }
+    SLOG(debug) << "retrieving goal information took " << t;
+    // try plot all the data:
+    service::vtkhl::plot3::plot(habits::active_dataset());
+    SLOG(debug) << "plotted data (processing took " << t << ")";
+    service::vtkhl::plot3::show();
 //    Py_Initialize();
 //    service::core::dataserver::initialize("localhost",62014);
 //    representations::trajectory3d::set_interpolation_strategy(representations::trajectory3d::interpolation_style::CUBIC_SPLINE);
