@@ -3,6 +3,7 @@
 #include <gppe/timing.h>
 #include <representations/trajectory.h>
 #include <service/vtkhl/plot3.h>
+#include <habits/segmentation/interfaces/segmentation.h>
 using namespace representations;
 int main (int argc, char ** argv) {
     gppe::delta_timer t;
@@ -14,10 +15,16 @@ int main (int argc, char ** argv) {
 //    SLOG(debug) << "goals are: " << habits::goal_information();
     const representations::point_cluster3d & goals = dynamic_cast<const representations::point_cluster3d&> (habits::goal_information());
     std::vector<std::string> keys = goals.keys();
-    for (int i = 0; i < keys.size(); i++) {
+    for (size_t i = 0; i < keys.size(); i++) {
         SLOG(debug) << "goal::: " << keys[i] << " :: " << goals.at(keys[i]);
         SLOG(debug) << "goal::: " << keys[i] << " :: (" << goals.at(keys[i])[0] << ", " << goals.at(keys[i])[1] << ", " << goals.at(keys[i])[2] << ")";
     }
+    // get active dataset:
+    auto data = dynamic_cast<const representations::time_series_cluster3d&>(habits::active_dataset());
+    // create segmentation
+    auto segmentation = habits::segmentation::interfaces::segmentation<representations::point3>(data);
+    // print segmentation:
+    SLOG(debug) << segmentation;
     SLOG(debug) << "retrieving goal information took " << t;
     // try plot all the data:
     service::vtkhl::plot3::plot(habits::active_dataset());

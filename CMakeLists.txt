@@ -65,7 +65,7 @@ list(APPEND HABITS_FRAMEWORK_SOURCES
     src/habits/core/options.cpp
     include/habits/datasets.h
     src/habits/datasets.cpp
-#    include/habits/segmentation/interfaces/segmentation.h
+    include/habits/segmentation/interfaces/segmentation.h
 #    src/habits/segmentation/interfaces/segmentation.cpp
 #    include/habits/segmentation/state_based_segmentation.h
 #    src/habits/segmentation/state_based_segmentation.cpp
