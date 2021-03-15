@@ -67,12 +67,12 @@ list(APPEND HABITS_FRAMEWORK_SOURCES
     src/habits/datasets.cpp
     include/habits/segmentation/interfaces/segmentation.h
 #    src/habits/segmentation/interfaces/segmentation.cpp
-#    include/habits/segmentation/state_based_segmentation.h
+    include/habits/segmentation/state_based_segmentation.h
 #    src/habits/segmentation/state_based_segmentation.cpp
-#    include/habits/utils/dataset_name_structure.h
-#    src/habits/utils/dataset_name_structure.cpp
-#    include/habits/segmentation/detectors/state_based_detector.h
-#    src/habits/segmentation/detectors/state_based_detector.cpp
+    include/habits/utils/dataset_name_structure.h
+    src/habits/utils/dataset_name_structure.cpp
+    include/habits/segmentation/detectors/state_based_detector.h
+    src/habits/segmentation/detectors/state_based_detector.cpp
 #    include/habits/segmentation/interfaces/detector.h
 #    include/habits/utils/setup_omp.h
 #    include/habits/data/activity_segmentation.h

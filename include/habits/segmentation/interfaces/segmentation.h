@@ -8,6 +8,8 @@ namespace habits {
         template<typename T> class segmentation : public representations::interfaces::cluster<representations::const_segmentation_semantic_ul<representations::interfaces::time_group<T>>> {
             public:
                 explicit segmentation(const representations::interfaces::cluster<representations::interfaces::time_series<T>> &collection);
+            protected:
+                representations::interfaces::semantic m_start, m_end;
             };
         }
     }

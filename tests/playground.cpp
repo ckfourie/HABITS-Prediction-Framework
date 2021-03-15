@@ -4,6 +4,7 @@
 #include <representations/trajectory.h>
 #include <service/vtkhl/plot3.h>
 #include <habits/segmentation/interfaces/segmentation.h>
+#include <habits/segmentation/state_based_segmentation.h>
 using namespace representations;
 int main (int argc, char ** argv) {
     gppe::delta_timer t;
@@ -20,12 +21,18 @@ int main (int argc, char ** argv) {
         SLOG(debug) << "goal::: " << keys[i] << " :: (" << goals.at(keys[i])[0] << ", " << goals.at(keys[i])[1] << ", " << goals.at(keys[i])[2] << ")";
     }
     // get active dataset:
+    SLOG(debug) << "retrieving goal information took " << t;
     auto data = dynamic_cast<const representations::time_series_cluster3d&>(habits::active_dataset());
     // create segmentation
-    auto segmentation = habits::segmentation::interfaces::segmentation<representations::point3>(data);
+    auto segmentation = habits::segmentation::state_based_segmentation<representations::point3>(data);
+    SLOG(debug) << "constructing segmentation took " << t;
     // print segmentation:
-    SLOG(debug) << segmentation;
-    SLOG(debug) << "retrieving goal information took " << t;
+    std::vector<std::string> segmentation_keys = segmentation.keys();
+    for (const std::string & key : segmentation_keys) {
+        const auto & segmentation_t = segmentation.at(key);
+        SLOG(debug)  << key << ": " << segmentation_t;
+    }
+    SLOG(debug) << "outputting segmentation took " << t;
     // try plot all the data:
     service::vtkhl::plot3::plot(habits::active_dataset());
     SLOG(debug) << "plotted data (processing took " << t << ")";
