@@ -5,6 +5,7 @@
 #include <service/vtkhl/plot3.h>
 #include <habits/segmentation/interfaces/segmentation.h>
 #include <habits/segmentation/state_based_segmentation.h>
+#include <habits/data/activity_segmentation.h>
 using namespace representations;
 int main (int argc, char ** argv) {
     gppe::delta_timer t;
@@ -33,8 +34,14 @@ int main (int argc, char ** argv) {
         SLOG(debug)  << key << ": " << segmentation_t;
     }
     SLOG(debug) << "outputting segmentation took " << t;
+    // split by activity:
+    habits::data::activity_segmentation<representations::point3> activities (segmentation);
+    SLOG(debug) << "sorted activities in " << t;
+    SLOG(debug) << "activities = " << activities;
+    auto activity_keys = activities.keys();
+    for (const auto & key : activity_keys) SLOG(debug) << "\t:key = " << key;
     // try plot all the data:
-    service::vtkhl::plot3::plot(habits::active_dataset());
+    service::vtkhl::plot3::plot(activities.at(activity_keys.front()));
     SLOG(debug) << "plotted data (processing took " << t << ")";
     service::vtkhl::plot3::show();
 //    Py_Initialize();

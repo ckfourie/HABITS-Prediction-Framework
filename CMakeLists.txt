@@ -73,9 +73,9 @@ list(APPEND HABITS_FRAMEWORK_SOURCES
     src/habits/utils/dataset_name_structure.cpp
     include/habits/segmentation/detectors/state_based_detector.h
     src/habits/segmentation/detectors/state_based_detector.cpp
-#    include/habits/segmentation/interfaces/detector.h
+    include/habits/segmentation/interfaces/detector.h
 #    include/habits/utils/setup_omp.h
-#    include/habits/data/activity_segmentation.h
+    include/habits/data/activity_segmentation.h
 #    src/habits/data/activity_segmentation.cpp
 #    include/habits/clustering/cluster_trajectories.h
 #    src/habits/clustering/cluster_trajectories.cpp
